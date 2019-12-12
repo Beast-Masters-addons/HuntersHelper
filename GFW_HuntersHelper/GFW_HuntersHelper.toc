@@ -1,0 +1,31 @@
+## Interface: 20400
+## Version: 2.4.2
+## X-Revision: $Rev: 657 $
+## X-Date: $Date: 2008-05-05 19:33:49 -0700 (Mon, 05 May 2008) $
+## Author: Gazmik Fizzwidget
+## X-Website: http://fizzwidget.com/huntershelper
+## X-Appcast: http://fizzwidget.com/notes/huntershelper/feed
+## Title: Fizzwidget Hunter's Helper
+## Notes: Helps you find tameable beasts to learn pet skills from.
+## Title-zhTW: [職業]寵物技能助手 Fizzwidget Hunter's Helper
+## Notes-zhTW: 幫助你查看可馴服的怪物會哪些寵物技能.
+## X-Category: Hunter
+## SavedVariables: FHH_NewInfo, GFW_HuntersHelperDB
+## SavedVariablesPerCharacter: FHH_KnownSpells
+## LoadManagers: AddonLoader
+## X-LoadOn-Class: Hunter
+
+GFWUtils.lua
+GFWTable.lua
+GFWZones.lua
+
+GFWOptions\Load.xml
+Dongle.lua
+
+localization.lua
+localization_BeastNames.lua
+HuntersHelper_BeastInfo.lua
+HuntersHelper_SpellInfo.lua
+HuntersHelper.lua
+HuntersHelper.xml
+FHH_MinimapButton.xml

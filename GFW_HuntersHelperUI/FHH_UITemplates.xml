@@ -1,0 +1,84 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
+..\..\FrameXML\UI.xsd">
+	<Button name="FHH_UIListButtonTemplate" inherits="ClassTrainerSkillButtonTemplate" hidden="false" virtual="true">
+		<Scripts>
+			<OnEnter>
+				FHH_UIListButton_OnEnter();
+			</OnEnter>
+			<OnLeave>
+				GameTooltip:Hide();
+			</OnLeave>
+			<OnClick>
+				FHH_UIListButton_OnClick(arg1);
+			</OnClick>
+		</Scripts>
+	</Button>
+	<Button name="FHH_UIRankButtonTemplate" hidden="false" virtual="true">
+		<PushedTextOffset>
+			<AbsDimension x="1" y="-1"/>
+		</PushedTextOffset>
+		<Size>
+			<AbsDimension x="20" y="12"/>
+		</Size>
+		<NormalFont inherits="GameFontNormalSmall" justifyH="CENTER"/>
+		<HighlightFont inherits="GameFontHighlightSmall" justifyH="CENTER"/>
+		<DisabledFont inherits="GameFontDisableSmall" justifyH="CENTER"/>
+		<Scripts>
+			<OnLoad>
+				this:SetFrameLevel(this:GetFrameLevel() + 1);
+			</OnLoad>
+			<OnEnter>
+				FHH_UIRankButton_OnEnter();
+			</OnEnter>
+			<OnLeave>
+				GameTooltip:Hide();
+			</OnLeave>
+			<OnClick>
+				FHH_UIRankButton_OnClick(arg1);
+			</OnClick>
+		</Scripts>
+	</Button>
+	<Button name="FHH_UIDetailItemTemplate" inherits="QuestItemTemplate" virtual="true">
+		<Layers>
+			<Layer level="ARTWORK">
+				<Texture name="$parentDecoration" file="Interface\DialogFrame\UI-DialogBox-Gold-Dragon" hidden="true">
+					<Size>
+						<AbsDimension x="65" y="65"/>
+					</Size>
+					<Anchors>
+						<Anchor point="CENTER" relativeTo="$parentIconTexture" relativePoint="CENTER">
+							<Offset>
+								<AbsDimension x="-5" y="-1"/>
+							</Offset>
+						</Anchor>
+					</Anchors>
+				</Texture>
+			</Layer>
+		</Layers>
+		<Scripts>
+			<OnLoad>
+				local buttonName = this:GetName();
+				local nameText = getglobal(buttonName.."Name");
+				nameText:SetFontObject(GameFontHighlightSmall);
+				local levelText = getglobal(buttonName.."Count");
+				local font, _, flags = NumberFontNormal:GetFont();
+				levelText:SetFont(font, 12, flags);
+				
+				this:SetWidth(this:GetWidth() - 10);
+				local nameFrame = getglobal(buttonName.."NameFrame")
+				nameFrame:SetWidth(nameFrame:GetWidth() - 10);
+			</OnLoad>
+			<OnEnter>
+				FHH_UIDetailItem_OnEnter();
+			</OnEnter>
+			<OnLeave>
+				GameTooltip:Hide();
+			</OnLeave>
+			<OnUpdate>
+				CursorOnUpdate();
+			</OnUpdate>
+			<OnClick>
+			</OnClick>
+		</Scripts>
+	</Button>
+</Ui>

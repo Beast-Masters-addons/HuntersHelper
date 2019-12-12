@@ -1,0 +1,145 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
+	..\FrameXML\UI.xsd">
+
+	<Script>
+				
+		function FHH_MinimapDrag_OnUpdate(arg1)
+			local xPos, yPos = GetCursorPosition();
+			local xMin, yMin = Minimap:GetLeft(), Minimap:GetBottom();
+
+			xPos = xMin - xPos / UIParent:GetScale() + 70;
+			yPos = yPos / UIParent:GetScale() - yMin - 70;
+
+			FHH_Options.MinimapPosition = math.deg(math.atan2(yPos, xPos));
+			FHH_MoveMinimapButton();
+		end
+
+		function FHH_MoveMinimapButton()
+			local default = FHH_Defaults.MinimapPosition;
+			local xPos = 52 - (80 * math.cos(math.rad(FHH_Options.MinimapPosition or default + 90)));
+			local yPos = (80 * math.sin(math.rad(FHH_Options.MinimapPosition or default + 90))) - 52;
+			FHH_MinimapFrame:SetPoint("TOPLEFT", "Minimap", "TOPLEFT", xPos, yPos);
+		end
+
+		function FHH_MinimapShineFadeIn()
+			-- Fade in the shine and then fade it out with the ComboPointShineFadeOut function
+			local fadeInfo = {};
+			fadeInfo.mode = "IN";
+			fadeInfo.timeToFade = 0.5;
+			fadeInfo.finishedFunc = FHH_MinimapShineFadeOut;
+			UIFrameFade(FHH_MinimapShine, fadeInfo);
+		end
+
+		--hack since a frame can't have a reference to itself in it
+		function FHH_MinimapShineFadeOut()
+			UIFrameFadeOut(FHH_MinimapShine, 0.5);
+		end
+
+	</Script>
+
+	<Frame name="FHH_MinimapDragFrame" parent="Minimap" hidden="true">
+		<Scripts>
+			<OnUpdate>
+				FHH_MinimapDrag_OnUpdate(arg1)
+			</OnUpdate>
+		</Scripts>
+	</Frame>
+
+	<Button name="FHH_MinimapFrame" parent="Minimap" enableMouse="true" movable="true" hidden="true">
+		<Size>
+			<AbsDimension x="33" y="33"/>
+		</Size>
+		<Anchors>
+			<Anchor point="TOPLEFT">
+				<Offset>
+					<AbsDimension x="-15" y="0"/>
+				</Offset>
+			</Anchor>
+		</Anchors>
+		<Layers>
+			<Layer level="BACKGROUND">
+				<Texture name="FHH_MinimapFrame_Icon" file="Interface\Icons\Ability_Hunter_BeastCall02">
+					<Size>
+						<AbsDimension x="21" y="21"/>
+					</Size>
+					<Anchors>
+						<Anchor point="TOPLEFT">
+							<Offset>
+								<AbsDimension x="6" y="-5"/>
+							</Offset>
+						</Anchor>
+					</Anchors>
+				</Texture>
+			</Layer>
+			<Layer level="ARTWORK">
+				<FontString name="FHH_MinimapCount" inherits="GameFontGreen">
+					<Anchors>
+						<Anchor point="CENTER"/>
+					</Anchors>
+				</FontString>
+			</Layer>
+			<Layer level="BORDER">
+				<Texture file="Interface\Minimap\MiniMap-TrackingBorder">
+					<Size>
+						<AbsDimension x="56" y="56"/>
+					</Size>
+					<Anchors>
+						<Anchor point="TOPLEFT"/>
+					</Anchors>
+				</Texture>
+				<Texture name="FHH_MinimapShine" file="Interface\ComboFrame\ComboPoint" alphaMode="ADD">
+					<Size>
+						<AbsDimension x="32" y="32"/>
+					</Size>
+					<Anchors>
+						<Anchor point="CENTER">
+							<Offset>
+								<AbsDimension x="3" y="3"/>
+							</Offset>
+						</Anchor>
+					</Anchors>
+					<TexCoords left="0.5625" right="1" top="0" bottom="1"/>
+				</Texture>
+			</Layer>
+		</Layers>
+		<HighlightTexture alphaMode="ADD" file="Interface\Minimap\UI-Minimap-ZoomButton-Highlight"/>
+		<Scripts>
+			<OnEnter>
+				GameTooltip:SetOwner(this, "ANCHOR_LEFT");
+				FHH_MinimapButtonTooltip();
+			</OnEnter>
+			<OnLeave>
+				GameTooltip:Hide();
+				GameTooltip:ClearLines();
+			</OnLeave>
+			<OnClick>
+				FHH_MinimapFrame_Icon:SetTexCoord(0, 1, 0, 1);
+				FHH_ShowUI();
+			</OnClick>
+			<OnLoad>
+				self:SetFrameLevel(self:GetFrameLevel()+1);
+				FHH_MinimapShine:SetAlpha(0);
+				this:RegisterForClicks("LeftButtonUp","RightButtonUp");
+				this:RegisterForDrag("LeftButton");
+				FHH_MinimapButtonCheck();
+			</OnLoad>
+			<OnMouseDown>
+				FHH_MinimapFrame_Icon:SetTexCoord(-0.05, 1.05, -0.05, 1.05);
+			</OnMouseDown>
+			<OnMouseUp>
+				FHH_MinimapFrame_Icon:SetTexCoord(0, 1, 0, 1);
+			</OnMouseUp>
+			<OnDragStart>
+				this:LockHighlight();
+				FHH_MinimapDragFrame:Show();
+			</OnDragStart>
+			<OnDragStop>
+				FHH_MinimapFrame_Icon:SetTexCoord(0, 1, 0, 1);
+				FHH_MinimapDragFrame:Hide();
+				this:UnlockHighlight();
+			</OnDragStop>
+		</Scripts>
+	</Button>
+	
+
+</Ui>
