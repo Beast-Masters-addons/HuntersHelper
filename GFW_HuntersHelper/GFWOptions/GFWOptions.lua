@@ -141,36 +141,36 @@ end
 -- Internals (widgets)
 ------------------------------------------------------------------------------
 
-local function optionsClickCheckButton()
-	if ( this:GetChecked() ) then
+local function optionsClickCheckButton(self)
+	if ( self:GetChecked() ) then
 		PlaySound("igMainMenuOptionCheckBoxOn");
 	else
 		PlaySound("igMainMenuOptionCheckBoxOff");
 	end
 	
-	local panel = this:GetParent();
+	local panel = self:GetParent();
 	local addonObj = getglobal(panel.addon);
 	local name = panel:GetName();
-	local key = string.gsub(this:GetName(), name.."_", "");
-	if (this.invert) then
+	local key = string.gsub(self:GetName(), name.."_", "");
+	if (self.invert) then
 		key = "No"..key;
-		addonObj.db.profile[key] = not (this:GetChecked() == 1);
+		addonObj.db.profile[key] = not (self:GetChecked() == 1);
 	else
-		addonObj.db.profile[key] = (this:GetChecked() == 1);
+		addonObj.db.profile[key] = (self:GetChecked() == 1);
 	end
 
-	checkDependentControls(this);
+	checkDependentControls(self);
 	
 	if (addonObj.OptionsChanged) then
 		addonObj:OptionsChanged();
 	end
 end
 
-local function optionsValueChangedSlider()
-	local addonObj = getglobal(this:GetParent().addon);
-	local name = this:GetParent():GetName();
-	local key = string.gsub(this:GetName(), name.."_", "");
-	addonObj.db.profile[key] = this:GetValue();
+local function optionsValueChangedSlider(self)
+	local addonObj = getglobal(self:GetParent().addon);
+	local name = self:GetParent():GetName();
+	local key = string.gsub(self:GetName(), name.."_", "");
+	addonObj.db.profile[key] = self:GetValue();
 
 	if (addonObj.OptionsChanged) then
 		addonObj:OptionsChanged();
@@ -228,9 +228,9 @@ local function optionsPanelCreateDropDown(panel, key, options, width)
 	dropDown.menuOptions = options;
 	dropDown.key = key;
 	
-	dropDown.click = function()
-		UIDropDownMenu_SetSelectedValue(dropDown, this.value);	
-		addonObj.db.profile[dropDown.key] = this.value;
+	dropDown.click = function(self)
+		UIDropDownMenu_SetSelectedValue(dropDown, self.value);	
+		addonObj.db.profile[dropDown.key] = self.value;
 
 		if (addonObj.OptionsChanged) then
 			addonObj:OptionsChanged();

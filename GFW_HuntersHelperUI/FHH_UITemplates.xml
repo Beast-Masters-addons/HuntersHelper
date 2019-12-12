@@ -3,13 +3,13 @@
 	<Button name="FHH_UIListButtonTemplate" inherits="ClassTrainerSkillButtonTemplate" hidden="false" virtual="true">
 		<Scripts>
 			<OnEnter>
-				FHH_UIListButton_OnEnter();
+				FHH_UIListButton_OnEnter(self);
 			</OnEnter>
 			<OnLeave>
 				GameTooltip:Hide();
 			</OnLeave>
 			<OnClick>
-				FHH_UIListButton_OnClick(arg1);
+				FHH_UIListButton_OnClick(self, arg1);
 			</OnClick>
 		</Scripts>
 	</Button>
@@ -25,16 +25,16 @@
 		<DisabledFont inherits="GameFontDisableSmall" justifyH="CENTER"/>
 		<Scripts>
 			<OnLoad>
-				this:SetFrameLevel(this:GetFrameLevel() + 1);
+				self:SetFrameLevel(self:GetFrameLevel() + 1);
 			</OnLoad>
 			<OnEnter>
-				FHH_UIRankButton_OnEnter();
+				FHH_UIRankButton_OnEnter(self);
 			</OnEnter>
 			<OnLeave>
 				GameTooltip:Hide();
 			</OnLeave>
 			<OnClick>
-				FHH_UIRankButton_OnClick(arg1);
+				FHH_UIRankButton_OnClick(self, arg1);
 			</OnClick>
 		</Scripts>
 	</Button>
@@ -57,19 +57,19 @@
 		</Layers>
 		<Scripts>
 			<OnLoad>
-				local buttonName = this:GetName();
+				local buttonName = self:GetName();
 				local nameText = getglobal(buttonName.."Name");
 				nameText:SetFontObject(GameFontHighlightSmall);
 				local levelText = getglobal(buttonName.."Count");
 				local font, _, flags = NumberFontNormal:GetFont();
 				levelText:SetFont(font, 12, flags);
 				
-				this:SetWidth(this:GetWidth() - 10);
+				self:SetWidth(self:GetWidth() - 10);
 				local nameFrame = getglobal(buttonName.."NameFrame")
 				nameFrame:SetWidth(nameFrame:GetWidth() - 10);
 			</OnLoad>
 			<OnEnter>
-				FHH_UIDetailItem_OnEnter();
+				FHH_UIDetailItem_OnEnter(self);
 			</OnEnter>
 			<OnLeave>
 				GameTooltip:Hide();

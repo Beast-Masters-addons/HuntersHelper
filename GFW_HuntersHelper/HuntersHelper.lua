@@ -32,11 +32,10 @@ FHH_NonSpellKeys = {
 	max=1,
 };
 
-function FHH_OnLoad()
-
-	this:RegisterEvent("PLAYER_ENTERING_WORLD");
-	this:RegisterEvent("ADDON_LOADED");
-	this:RegisterEvent("UPDATE_MOUSEOVER_UNIT");
+function FHH_OnLoad(self)
+    self:RegisterEvent("PLAYER_ENTERING_WORLD");
+    self:RegisterEvent("ADDON_LOADED");
+    self:RegisterEvent("UPDATE_MOUSEOVER_UNIT");
 
 	-- Register Slash Commands
 	SLASH_FHH1 = "/huntershelper";
@@ -47,7 +46,7 @@ function FHH_OnLoad()
 	
 end
 
-function FHH_OnEvent(event, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9)
+function FHH_OnEvent(self, event, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9)
 
 	--DevTools_Dump({event=event, arg1=arg1, arg2=arg2, arg3=arg3, arg4=arg4, arg5=arg5, arg6=arg6, arg7=arg7, arg8=arg8, arg9=arg9});
 
@@ -58,12 +57,12 @@ function FHH_OnEvent(event, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9
 		_, realClass = UnitClass("player");
 		if (realClass == "HUNTER") then
 			-- only do stuff related to taming and checking hunter spells if you're a hunter.
-			this:RegisterEvent("UNIT_AURA");
-			this:RegisterEvent("UNIT_NAME_UPDATE");
-			this:RegisterEvent("CRAFT_SHOW");
-			this:RegisterEvent("CRAFT_UPDATE");
-			this:RegisterEvent("CRAFT_CLOSE");
-			this:RegisterEvent("CHAT_MSG_SYSTEM");
+			self:RegisterEvent("UNIT_AURA");
+			self:RegisterEvent("UNIT_NAME_UPDATE");
+			self:RegisterEvent("CRAFT_SHOW");
+			self:RegisterEvent("CRAFT_UPDATE");
+			self:RegisterEvent("CRAFT_CLOSE");
+			self:RegisterEvent("CHAT_MSG_SYSTEM");
 
 			if (FHH_KnownSpells == nil or GFWTable.Count(FHH_KnownSpells) == 0) then
 				if (loadable and realClass == "HUNTER" and UnitLevel("player") >= 10) then
@@ -81,7 +80,7 @@ function FHH_OnEvent(event, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9
 			end
 			FHH_MinimapButtonCheck();
 		end
-		this:UnregisterEvent("ADDON_LOADED");
+		self:UnregisterEvent("ADDON_LOADED");
 		
 	elseif ( event == "UPDATE_MOUSEOVER_UNIT" ) then
 	
@@ -649,7 +648,7 @@ end
 
 FHH_CraftFrameSettings = {};
 
-function FHH_HideCraftFrame()
+function FHH_HideCraftFrame(self)
 	if (not FHH_CraftFrameSettings.hidden) then
 		FHH_CraftFrameSettings.hidden = true;
 	    FHH_CraftFrameSettings.strata = CraftFrame:GetFrameStrata();
@@ -660,7 +659,7 @@ function FHH_HideCraftFrame()
 		FHH_UI:SetPoint("TOPLEFT", CraftFrame, "TOPLEFT", 0, 0);
 		if (not GFWTable.KeyOf(UISpecialFrames, "FHH_UI")) then
 			-- with our position tied to the CraftFrame's, we just need to make sure we're closable with esc
-			table.insert(UISpecialFrames, this:GetName());
+			table.insert(UISpecialFrames, self:GetName());
 		end
 	end
 end

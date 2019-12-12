@@ -105,7 +105,7 @@
 		<HighlightTexture alphaMode="ADD" file="Interface\Minimap\UI-Minimap-ZoomButton-Highlight"/>
 		<Scripts>
 			<OnEnter>
-				GameTooltip:SetOwner(this, "ANCHOR_LEFT");
+				GameTooltip:SetOwner(self, "ANCHOR_LEFT");
 				FHH_MinimapButtonTooltip();
 			</OnEnter>
 			<OnLeave>
@@ -119,8 +119,8 @@
 			<OnLoad>
 				self:SetFrameLevel(self:GetFrameLevel()+1);
 				FHH_MinimapShine:SetAlpha(0);
-				this:RegisterForClicks("LeftButtonUp","RightButtonUp");
-				this:RegisterForDrag("LeftButton");
+				self:RegisterForClicks("LeftButtonUp","RightButtonUp");
+				self:RegisterForDrag("LeftButton");
 				FHH_MinimapButtonCheck();
 			</OnLoad>
 			<OnMouseDown>
@@ -130,13 +130,13 @@
 				FHH_MinimapFrame_Icon:SetTexCoord(0, 1, 0, 1);
 			</OnMouseUp>
 			<OnDragStart>
-				this:LockHighlight();
+				self:LockHighlight();
 				FHH_MinimapDragFrame:Show();
 			</OnDragStart>
 			<OnDragStop>
 				FHH_MinimapFrame_Icon:SetTexCoord(0, 1, 0, 1);
 				FHH_MinimapDragFrame:Hide();
-				this:UnlockHighlight();
+				self:UnlockHighlight();
 			</OnDragStop>
 		</Scripts>
 	</Button>

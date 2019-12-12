@@ -162,7 +162,7 @@
 				</Anchors>
 				<Scripts>
 					<OnLoad>
-						FHH_UIViewByDropDown_OnLoad();
+						FHH_UIViewByDropDown_OnLoad(self);
 					</OnLoad>
 				</Scripts>
 			</Frame>
@@ -215,29 +215,29 @@
 				</Layers>
 				<Scripts>
 					<OnLoad>
-						this:SetText(SEARCH);
-						this:SetPoint("RIGHT", FHH_UIViewByDropDown, "LEFT", 17, 2)
-						this:SetFrameLevel(this:GetFrameLevel()+1);
+						self:SetText(SEARCH);
+						self:SetPoint("RIGHT", FHH_UIViewByDropDown, "LEFT", 17, 2)
+						self:SetFrameLevel(self:GetFrameLevel()+1);
 					</OnLoad>
 					<OnEnterPressed>
-						this:ClearFocus();
+						self:ClearFocus();
 					</OnEnterPressed>
 					<OnEscapePressed>
-						this:ClearFocus();
+						self:ClearFocus();
 					</OnEscapePressed>
 					<OnTextChanged>
-						FHH_UIFilter_OnTextChanged();
+						FHH_UIFilter_OnTextChanged(self);
 					</OnTextChanged>
 					<OnEditFocusLost>
-						this:HighlightText(0, 0);
-						if ( this:GetText() == "" ) then
-							this:SetText(SEARCH);
+						self:HighlightText(0, 0);
+						if ( self:GetText() == "" ) then
+							self:SetText(SEARCH);
 						end
 					</OnEditFocusLost>
 					<OnEditFocusGained>
-						this:HighlightText();
-						if ( this:GetText() == SEARCH ) then
-							this:SetText("");
+						self:HighlightText();
+						if ( self:GetText() == SEARCH ) then
+							self:SetText("");
 						end
 					</OnEditFocusGained>
 				</Scripts>
@@ -300,10 +300,10 @@
 						</Anchors>
 						<Scripts>
 							<OnLoad>
-								getglobal(this:GetName()):SetText(ALL);
+								getglobal(self:GetName()):SetText(ALL);
 							</OnLoad>
 							<OnClick>
-								FHH_UICollapseAllButton_OnClick();
+								FHH_UICollapseAllButton_OnClick(self);
 							</OnClick>
 						</Scripts>
 					</Button>
@@ -319,7 +319,7 @@
 				</Anchors>
 				<Scripts>
 					<OnLoad>
-						FHH_UIKnownDropDown_OnLoad();
+						FHH_UIKnownDropDown_OnLoad(self);
 					</OnLoad>
 				</Scripts>
 			</Frame>
@@ -333,7 +333,7 @@
 				</Anchors>
 				<Scripts>
 					<OnLoad>
-						FHH_UIFamilyDropDown_OnLoad();
+						FHH_UIFamilyDropDown_OnLoad(self);
 					</OnLoad>
 				</Scripts>
 			</Frame>
@@ -438,7 +438,7 @@
 				</Anchors>
 				<Scripts>
 					<OnVerticalScroll>
-						FauxScrollFrame_OnVerticalScroll(FHH_UI_LIST_HEIGHT, FHH_UIUpdate);
+						FauxScrollFrame_OnVerticalScroll(self, offset, FHH_UI_LIST_HEIGHT, FHH_UIUpdate);
 					</OnVerticalScroll>
 				</Scripts>
 			</ScrollFrame>
@@ -702,10 +702,10 @@
 								</Layers>
 								<Scripts>
 									<OnEnter>
-										FHH_UIDetailIcon_OnEnter();
+										FHH_UIDetailIcon_OnEnter(self);
 									</OnEnter>
 									<OnLeave>
-										GameTooltip:Hide();
+										GameTooltip:Hide(self);
 									</OnLeave>
 								</Scripts>
 							</Button>
@@ -759,14 +759,14 @@
 		</Frames>
 		<Scripts>
 			<OnLoad>
-				FHH_UIOnLoad();
+				FHH_UIOnLoad(self);
 			</OnLoad>
 			<OnEvent>
-				FHH_UIOnEvent();
+				FHH_UIOnEvent(self);
 			</OnEvent>
 			<OnShow>
 				--PlaySound("igCharacterInfoOpen");
-				FHH_UIOnShow();
+				FHH_UIOnShow(self);
 			</OnShow>
 			<OnHide>
 				--PlaySound("igCharacterInfoClose");

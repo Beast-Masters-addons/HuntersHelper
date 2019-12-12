@@ -24,14 +24,14 @@ FHH_UIColors = {
 };
 
 
-function FHH_UIOnLoad()
+function FHH_UIOnLoad(self)
 	
 	local title = GetAddOnMetadata("GFW_HuntersHelper", "Title");
 	local version = GetAddOnMetadata("GFW_HuntersHelper", "Version");
 	FHH_UITitleText:SetText(title .. " " .. version);
 
-	this:RegisterEvent("ADDON_LOADED");
-	this:RegisterEvent("UNIT_PORTRAIT_UPDATE");
+	self:RegisterEvent("ADDON_LOADED");
+	self:RegisterEvent("UNIT_PORTRAIT_UPDATE");
 	--FHH_UIUpdateList();
 	--ShowUIPanel(FHH_UI);
 end
@@ -47,18 +47,18 @@ function FHH_UIOnShow()
 	FHH_UIUpdate();
 end
 
-function FHH_UIOnEvent()
+function FHH_UIOnEvent(self)
 	if (event == "ADDON_LOADED" and arg1 == "GFW_HuntersHelperUI") then
 	
 		local viewBy = FHH_UIViewByZone and FHH_UI_VIEW_BY_ZONE or FHH_UI_VIEW_BY_ABILITY;
 		UIDropDownMenu_SetSelectedValue(FHH_UIViewByDropDown, viewBy, 1);
-		UIDropDownMenu_SetText(viewBy, FHH_UIViewByDropDown);
+		UIDropDownMenu_SetText(FHH_UIViewByDropDown, viewBy);
 		
-		this:UnregisterEvent("ADDON_LOADED");
-		
-		this:RegisterEvent("UNIT_PET_TRAINING_POINTS");
-		this:RegisterEvent("UNIT_PET");
-		this:RegisterEvent("CRAFT_UPDATE");
+		self:UnregisterEvent("ADDON_LOADED");
+
+		self:RegisterEvent("UNIT_PET_TRAINING_POINTS");
+		self:RegisterEvent("UNIT_PET");
+		self:RegisterEvent("CRAFT_UPDATE");
 
 		if ( UnitExists("pet") and FHH_ReplacingCraftFrame) then
 			SetPortraitTexture(FHH_UIPortrait, "pet");
@@ -937,39 +937,39 @@ end
 
 -- list/rank buttons
 
-function FHH_UIListButton_OnEnter()
-	if (not FHH_Options.NoUITooltip and this.spell) then
-		GameTooltip:SetOwner(this, "ANCHOR_RIGHT");
-		GameTooltip:SetText(FHH_SpellDescription(this.spell),
+function FHH_UIListButton_OnEnter(self)
+	if (not FHH_Options.NoUITooltip and self.spell) then
+		GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
+		GameTooltip:SetText(FHH_SpellDescription(self.spell),
 			HIGHLIGHT_FONT_COLOR.r, HIGHLIGHT_FONT_COLOR.g, HIGHLIGHT_FONT_COLOR.b);
 		
-		if (this.status == "available") then
-			if (FHH_TrainerSpells[this.spell]) then
+		if (self.status == "available") then
+			if (FHH_TrainerSpells[self.spell]) then
 				GameTooltip:AddLine(FHH_UI_AVAILABLE_TRAINER);
 			else
 				GameTooltip:AddLine(FHH_UI_AVAILABLE_TAME);
 			end
-		elseif (this.status == "learning") then
+		elseif (self.status == "learning") then
 			GameTooltip:AddLine(format(FHH_UI_LEARN_FROM_PET_FMT, UnitName("pet")));
-		elseif (this.status == "unavailable") then
+		elseif (self.status == "unavailable") then
 			GameTooltip:AddLine(UNAVAILABLE);
-		elseif (this.status == "used") then
+		elseif (self.status == "used") then
 			GameTooltip:AddLine(USED);
-		elseif (this.status == "trainable") then
+		elseif (self.status == "trainable") then
 			GameTooltip:AddLine(format(FHH_UI_PET_CAN_TRAIN_FMT, UnitName("pet")));
-		elseif (this.status == "nevertrain") then
+		elseif (self.status == "nevertrain") then
 			GameTooltip:AddLine(format(FHH_UI_PET_NEVER_LEARN_FMT, UnitName("pet")));
-		elseif (this.status == "untrainable") then
+		elseif (self.status == "untrainable") then
 			GameTooltip:AddLine(format(FHH_UI_PET_CANT_LEARN_FMT, UnitName("pet")));
-		elseif (this.status == "trained") then
+		elseif (self.status == "trained") then
 			GameTooltip:AddLine(format(FHH_UI_PET_TRAINED_FMT, UnitName("pet")));
 		end
 		GameTooltip:Show();
 	end
 end
 
-function FHH_UIListButton_OnClick(button)
-	local clickedIndex = this:GetID();
+function FHH_UIListButton_OnClick(self, button)
+	local clickedIndex = self:GetID();
 	local clickedItem = FHH_UIDisplayList[clickedIndex];
 
 	if (clickedItem and clickedItem.header) then
@@ -982,56 +982,56 @@ function FHH_UIListButton_OnClick(button)
 	FHH_UIUpdate();
 end
 
-function FHH_UIRankButton_OnEnter()
+function FHH_UIRankButton_OnEnter(self)
 	if (not FHH_Options.NoUITooltip) then
-		GameTooltip:SetOwner(this, "ANCHOR_RIGHT");
-		GameTooltip:AddDoubleLine(FHH_SpellDescription(this.spell), RANK.." "..this.rank,
+		GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
+		GameTooltip:AddDoubleLine(FHH_SpellDescription(self.spell), RANK.." "..self.rank,
 			HIGHLIGHT_FONT_COLOR.r, HIGHLIGHT_FONT_COLOR.g, HIGHLIGHT_FONT_COLOR.b,
 			GRAY_FONT_COLOR.r, GRAY_FONT_COLOR.g, GRAY_FONT_COLOR.b);
 		
-		if (this.status == "available") then
-			if (FHH_TrainerSpells[this.spell]) then
+		if (self.status == "available") then
+			if (FHH_TrainerSpells[self.spell]) then
 				GameTooltip:AddLine(FHH_UI_AVAILABLE_TRAINER);
 			else
 				GameTooltip:AddLine(FHH_UI_AVAILABLE_TAME);
 			end
-		elseif (this.status == "learning") then
+		elseif (self.status == "learning") then
 			GameTooltip:AddLine(format(FHH_UI_LEARN_FROM_PET_FMT, UnitName("pet")));
-		elseif (this.status == "unavailable") then
+		elseif (self.status == "unavailable") then
 			GameTooltip:AddLine(UNAVAILABLE);
-		elseif (this.status == "used") then
+		elseif (self.status == "used") then
 			GameTooltip:AddLine(USED);
-		elseif (this.status == "trainable") then
+		elseif (self.status == "trainable") then
 			GameTooltip:AddLine(format(FHH_UI_PET_CAN_TRAIN_FMT, UnitName("pet")));
-		elseif (this.status == "nevertrain") then
+		elseif (self.status == "nevertrain") then
 			GameTooltip:AddLine(format(FHH_UI_PET_NEVER_LEARN_FMT, UnitName("pet")));
-		elseif (this.status == "untrainable") then
+		elseif (self.status == "untrainable") then
 			GameTooltip:AddLine(format(FHH_UI_PET_CANT_LEARN_FMT, UnitName("pet")));
-		elseif (this.status == "trained") then
+		elseif (self.status == "trained") then
 			GameTooltip:AddLine(format(FHH_UI_PET_TRAINED_FMT, UnitName("pet")));
 		end
 		GameTooltip:Show();
 	end
 end
 
-function FHH_UIRankButton_OnClick(button)
-	FHH_UISetSelection(FHH_UIListSelectionIndex, this:GetID());
+function FHH_UIRankButton_OnClick(self, _)
+	FHH_UISetSelection(FHH_UIListSelectionIndex, self:GetID());
 end
 
 -- collapse/expand all button
 
-function FHH_UICollapseAllButton_OnClick()
-	if (this.collapsed) then
+function FHH_UICollapseAllButton_OnClick(self)
+	if (self.collapsed) then
 		FHH_UIListSelectionIndex = 0;
-		this.collapsed = nil;
+		self.collapsed = nil;
 	else
-		this.collapsed = 1;
+		self.collapsed = 1;
 		FHH_UIListScrollFrameScrollBar:SetValue(0);
 	end
 	for _, listItem in ipairs(FHH_UIListItems) do
 		if (listItem.header) then
-			listItem.expanded = not this.collapsed;
-			FHH_UICollapsedHeaders[listItem.name] = this.collapsed;
+			listItem.expanded = not self.collapsed;
+			FHH_UICollapsedHeaders[listItem.name] = self.collapsed;
 		end
 	end
 	
@@ -1042,8 +1042,8 @@ end
 
 -- text filter editbox
 
-function FHH_UIFilter_OnTextChanged()
-	local text = this:GetText();
+function FHH_UIFilter_OnTextChanged(self)
+	local text = self:GetText();
 	if ( text ~= FHH_UIFilterName) then
 		if ( text == SEARCH or text == "" ) then
 			FHH_UIFilterName = nil;
@@ -1059,9 +1059,9 @@ end
 
 -- View By (ability / zone) menu
 
-function FHH_UIViewByDropDown_OnLoad()
-	UIDropDownMenu_Initialize(this, FHH_UIViewByDropDown_Initialize);
-	UIDropDownMenu_SetWidth(120, FHH_UIViewByDropDown);
+function FHH_UIViewByDropDown_OnLoad(self)
+	UIDropDownMenu_Initialize(self, FHH_UIViewByDropDown_Initialize);
+	UIDropDownMenu_SetWidth(FHH_UIViewByDropDown, 120);
 	UIDropDownMenu_SetSelectedValue(FHH_UIViewByDropDown, FHH_UIViewByZone and FHH_UI_VIEW_BY_ZONE or FHH_UI_VIEW_BY_ABILITY);
 	UIDropDownMenu_SetText(FHH_UIViewByZone and FHH_UI_VIEW_BY_ZONE or FHH_UI_VIEW_BY_ABILITY, FHH_UIViewByDropDown);
 end
@@ -1082,9 +1082,9 @@ function FHH_UIViewByDropDown_Initialize()
 	UIDropDownMenu_AddButton(info);
 end
 
-function FHH_UIViewByDropDown_OnClick()	
-	UIDropDownMenu_SetSelectedValue(FHH_UIViewByDropDown, this.value);
-	FHH_UIViewByZone = (this.value == FHH_UI_VIEW_BY_ZONE) and 1 or nil;
+function FHH_UIViewByDropDown_OnClick(self)
+	UIDropDownMenu_SetSelectedValue(FHH_UIViewByDropDown, self.value);
+	FHH_UIViewByZone = (self.value == FHH_UI_VIEW_BY_ZONE) and 1 or nil;
 	FHH_UICollapsedHeaders = {};
 	FHH_UIUpdateList();
 	FHH_UIUpdateDisplayList();
@@ -1093,10 +1093,10 @@ function FHH_UIViewByDropDown_OnClick()
 end
 
 -- filter by Known menu
-function FHH_UIKnownDropDown_OnLoad()
-	UIDropDownMenu_Initialize(this, FHH_UIKnownDropDown_Initialize);
-	UIDropDownMenu_SetText(FILTER, this);
-	UIDropDownMenu_SetWidth(120, FHH_UIKnownDropDown);
+function FHH_UIKnownDropDown_OnLoad(self)
+	UIDropDownMenu_Initialize(self, FHH_UIKnownDropDown_Initialize);
+	UIDropDownMenu_SetText(self, FILTER);
+	UIDropDownMenu_SetWidth(FHH_UIKnownDropDown, 120);
 end
 
 function FHH_UIKnownDropDown_Initialize()
@@ -1183,8 +1183,8 @@ function FHH_UIKnownDropDown_Initialize()
 	end
 end
 
-function FHH_UIKnownDropDown_OnClick()	
-	FHH_UIFilterKnownSkills[this.value] = not (UIDropDownMenuButton_GetChecked() == 1);
+function FHH_UIKnownDropDown_OnClick(self)
+	FHH_UIFilterKnownSkills[self.value] = not (UIDropDownMenuButton_GetChecked() == 1);
 	FHH_UIUpdateList();
 	FHH_UIUpdateDisplayList();
 	FHH_UISetSelection(FHH_UIListSelectionIndex, FHH_UISelectedRank);
@@ -1193,9 +1193,9 @@ end
 
 -- filter by family menu
 
-function FHH_UIFamilyDropDown_OnLoad()
-	UIDropDownMenu_Initialize(this, FHH_UIFamilyDropDown_Initialize);
-	UIDropDownMenu_SetWidth(120, FHH_UIFamilyDropDown);
+function FHH_UIFamilyDropDown_OnLoad(self)
+	UIDropDownMenu_Initialize(self, FHH_UIFamilyDropDown_Initialize);
+	UIDropDownMenu_SetWidth(FHH_UIFamilyDropDown, 120);
 	UIDropDownMenu_SetSelectedValue(FHH_UIFamilyDropDown, FHH_UIFilterFamily or FHH_UI_ALL_FAMILIES);
 end
 
@@ -1217,12 +1217,12 @@ function FHH_UIFamilyDropDown_Initialize()
 	end
 end
 
-function FHH_UIFamilyDropDown_OnClick()	
-	UIDropDownMenu_SetSelectedID(FHH_UIFamilyDropDown, this:GetID());
-	if (this.value == FHH_UI_ALL_FAMILIES) then
+function FHH_UIFamilyDropDown_OnClick(self)
+	UIDropDownMenu_SetSelectedID(FHH_UIFamilyDropDown, self:GetID());
+	if (self.value == FHH_UI_ALL_FAMILIES) then
 		FHH_UIFilterFamily = nil;
 	else
-		FHH_UIFilterFamily = this.value;
+		FHH_UIFilterFamily = self.value;
 	end
 	FHH_UIUpdateList();
 	FHH_UIUpdateDisplayList();
@@ -1232,13 +1232,13 @@ end
 
 -- Detail UI tooltips
 
-function FHH_UIDetailIcon_OnEnter()
+function FHH_UIDetailIcon_OnEnter(self)
 
 	-- only show a tooltip on this icon for spells we know;
 	-- there's nothing to show for beasts that isn't already visible,
 	-- likewise for spells we don't know
 	if (not FHH_UIViewByZone) then
-		GameTooltip:SetOwner(this, "ANCHOR_RIGHT");
+		GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
 		
 		local listItem = FHH_UIDisplayList[FHH_UIListSelectionIndex];
 		local craftIndex = FHH_UICraftIndexForSpell(listItem.id, FHH_UISelectedRank);
@@ -1250,28 +1250,28 @@ function FHH_UIDetailIcon_OnEnter()
 	end
 end
 
-function FHH_UIDetailItem_OnEnter()
+function FHH_UIDetailItem_OnEnter(self)
 
-	GameTooltip:SetOwner(this, "ANCHOR_RIGHT");
+	GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
 	if (FHH_UIViewByZone) then
 		-- detail items are spells
 
-		local craftIndex = FHH_UICraftIndexForSpell(this.spellToken, this.rank);
+		local craftIndex = FHH_UICraftIndexForSpell(self.spellToken, self.rank);
 		if (craftIndex) then
 			GameTooltip:SetCraftSpell(craftIndex);
 		else
 			local rankText = "";
-			if (this.rank) then
-				rankText = RANK.." "..this.rank;
+			if (self.rank) then
+				rankText = RANK.." "..self.rank;
 			end
-			GameTooltip:AddDoubleLine(FHH_SpellDescription(this.spellToken), rankText,
+			GameTooltip:AddDoubleLine(FHH_SpellDescription(self.spellToken), rankText,
 				HIGHLIGHT_FONT_COLOR.r, HIGHLIGHT_FONT_COLOR.g, HIGHLIGHT_FONT_COLOR.b,
 				GRAY_FONT_COLOR.r, GRAY_FONT_COLOR.g, GRAY_FONT_COLOR.b);
 		end
 		
-		local requiredLevel = FHH_RequiredLevel[this.spellToken];
+		local requiredLevel = FHH_RequiredLevel[self.spellToken];
 		if (type(requiredLevel) == "table") then
-			requiredLevel = requiredLevel[this.rank];
+			requiredLevel = requiredLevel[self.rank];
 		end
 		if ( UnitLevel("pet") >= requiredLevel ) then
 			GameTooltip:AddLine(format(ITEM_REQ_SKILL, format(TRAINER_PET_LEVEL, requiredLevel)),
@@ -1285,10 +1285,10 @@ function FHH_UIDetailItem_OnEnter()
 	else
 		-- detail items are pets
 		
-		GameTooltip:SetText(FHH_Localized[this.beastName] or this.beastName,
+		GameTooltip:SetText(FHH_Localized[self.beastName] or self.beastName,
 			HIGHLIGHT_FONT_COLOR.r, HIGHLIGHT_FONT_COLOR.g, HIGHLIGHT_FONT_COLOR.b);
 		
-		local info = FHH_BeastInfo[this.beastName];
+		local info = FHH_BeastInfo[self.beastName];
 		local levelString;
 		if (info.min > UnitLevel("player")) then
 			levelString = RED_FONT_COLOR_CODE..info.min..FONT_COLOR_CODE_CLOSE;
@@ -1358,7 +1358,7 @@ function FHH_UICraftIndexForSpell(spellToken, rank)
 	end
 end
 
-function FHH_UITrainButton_OnClick(button)
+function FHH_UITrainButton_OnClick(_)
 	local listItem = FHH_UIDisplayList[FHH_UIListSelectionIndex];
 	local craftIndex = FHH_UICraftIndexForSpell(listItem.id, FHH_UISelectedRank);
 	DoCraft(craftIndex);
