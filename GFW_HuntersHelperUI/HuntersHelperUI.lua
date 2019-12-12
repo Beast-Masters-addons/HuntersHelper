@@ -1063,7 +1063,7 @@ function FHH_UIViewByDropDown_OnLoad(self)
 	UIDropDownMenu_Initialize(self, FHH_UIViewByDropDown_Initialize);
 	UIDropDownMenu_SetWidth(FHH_UIViewByDropDown, 120);
 	UIDropDownMenu_SetSelectedValue(FHH_UIViewByDropDown, FHH_UIViewByZone and FHH_UI_VIEW_BY_ZONE or FHH_UI_VIEW_BY_ABILITY);
-	UIDropDownMenu_SetText(FHH_UIViewByZone and FHH_UI_VIEW_BY_ZONE or FHH_UI_VIEW_BY_ABILITY, FHH_UIViewByDropDown);
+	UIDropDownMenu_SetText(FHH_UIViewByDropDown, FHH_UIViewByZone and FHH_UI_VIEW_BY_ZONE or FHH_UI_VIEW_BY_ABILITY);
 end
 
 function FHH_UIViewByDropDown_Initialize()
