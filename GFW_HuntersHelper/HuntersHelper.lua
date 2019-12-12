@@ -522,7 +522,7 @@ function FHH_ModifyTooltip(unit)
 	end
 
 	-- look up the list of abilities we think this critter has
-	local abilitiesList = nil;
+	local abilitiesList;
 	if (FHH_NewInfo and FHH_NewInfo.BeastInfo and FHH_NewInfo.BeastInfo[creepName]) then
 		abilitiesList = FHH_NewInfo.BeastInfo[creepName];
 	elseif (FHH_BeastInfo[creepName]) then
