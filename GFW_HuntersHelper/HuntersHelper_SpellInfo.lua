@@ -120,7 +120,7 @@ FHH_SpellIDsToTokens = {
 	[14919]	= "growl",		-- 5
 	[14920]	= "growl",		-- 6
 	[14921]	= "growl",		-- 7
-	[27047]	= "growl",		-- 8
+	--[27047]	= "growl",		-- 8
 	
 	[17253]	= "bite",		-- 1
 	[17255]	= "bite",		-- 2
@@ -130,7 +130,7 @@ FHH_SpellIDsToTokens = {
 	[17259]	= "bite",		-- 6
 	[17260]	= "bite",		-- 7
 	[17261]	= "bite",		-- 8
-	[27050]	= "bite",		-- 9
+	--[27050]	= "bite",		-- 9
 	
 	[16827]	= "claw",		-- 1
 	[16828]	= "claw",		-- 2
@@ -140,7 +140,7 @@ FHH_SpellIDsToTokens = {
 	[16832]	= "claw",		-- 6
 	[3010]	= "claw",		-- 7
 	[3009]	= "claw",		-- 8
-	[27049]	= "claw",		-- 9
+	--[27049]	= "claw",		-- 9
 	
 	[1742]	= "cower",		-- 1
 	[1753]	= "cower",		-- 2
@@ -148,7 +148,7 @@ FHH_SpellIDsToTokens = {
 	[1755]	= "cower",		-- 4
 	[1756]	= "cower",		-- 5
 	[16697]	= "cower",		-- 6
-	[27048]	= "cower",		-- 7
+	--[27048]	= "cower",		-- 7
 	
 	[23099]	= "dash",		-- 1
 	[23109]	= "dash",		-- 2
@@ -164,18 +164,18 @@ FHH_SpellIDsToTokens = {
 	[26201]	= "charge",		-- 5
 	[27685]	= "charge",		-- 6
 	
-	[34889]	= "firebreath",		-- 1
-	[35323]	= "firebreath",		-- 2
+	--[34889]	= "firebreath",		-- 1
+	--[35323]	= "firebreath",		-- 2
 	
-	[35290]	= "gore",		-- 1
-	[35291]	= "gore",		-- 2
-	[35292]	= "gore",		-- 3
-	[35293]	= "gore",		-- 4
-	[35294]	= "gore",		-- 5
-	[35295]	= "gore",		-- 6
-	[35296]	= "gore",		-- 7
-	[35297]	= "gore",		-- 8
-	[35298]	= "gore",		-- 9
+	--[35290]	= "gore",		-- 1
+	--[35291]	= "gore",		-- 2
+	--[35292]	= "gore",		-- 3
+	--[35293]	= "gore",		-- 4
+	--[35294]	= "gore",		-- 5
+	--[35295]	= "gore",		-- 6
+	--[35296]	= "gore",		-- 7
+	--[35297]	= "gore",		-- 8
+	--[35298]	= "gore",		-- 9
 	
 	[24604]	= "howl",		-- 1
 	[24605]	= "howl",		-- 2
@@ -193,7 +193,7 @@ FHH_SpellIDsToTokens = {
 	[24583]	= "poison",		-- 2
 	[24586]	= "poison",		-- 3
 	[24587]	= "poison",		-- 4
-	[27060]	= "poison",		-- 5
+	--[27060]	= "poison",		-- 5
 
 	[24450]	= "prowl",		-- 1
 	[24452]	= "prowl",		-- 2
@@ -203,20 +203,20 @@ FHH_SpellIDsToTokens = {
 	[24577]	= "screech",		-- 2
 	[24578]	= "screech",		-- 3
 	[24579]	= "screech",		-- 4
-	[27051]	= "screech",		-- 5
+	--[27051]	= "screech",		-- 5
 
 	[26064]	= "shell",		-- 1
 
-	[35387]	= "spit",		-- 1
-	[35389]	= "spit",		-- 2
-	[35392]	= "spit",		-- 3
+	--[35387]	= "spit",		-- 1
+	--[35389]	= "spit",		-- 2
+	--[35392]	= "spit",		-- 3
 
 	[26090]	= "thunderstomp",		-- 1
 	[26187]	= "thunderstomp",		-- 2
 	[26188]	= "thunderstomp",		-- 3
-	[27063]	= "thunderstomp",		-- 4
+	--[27063]	= "thunderstomp",		-- 4
 
-	[35346]	= "warp",
+	--[35346]	= "warp",
 
 	[24545]	= "armor",		-- 1
 	[24549]	= "armor",		-- 2
@@ -228,10 +228,10 @@ FHH_SpellIDsToTokens = {
 	[24555]	= "armor",		-- 8
 	[24629]	= "armor",		-- 9
 	[24630]	= "armor",		-- 10
-	[27061]	= "armor",		-- 11
+	--[27061]	= "armor",		-- 11
 
-	[35694]	= "avoidance",		-- 1
-	[35698]	= "avoidance",		-- 2
+	--[35694]	= "avoidance",		-- 1
+	--[35698]	= "avoidance",		-- 2
 
 	[25076]	= "reflexes",
 
@@ -239,27 +239,27 @@ FHH_SpellIDsToTokens = {
 	[24497]	= "resist_arcane",		-- 2
 	[24500]	= "resist_arcane",		-- 3
 	[24501]	= "resist_arcane",		-- 4
-	[27052]	= "resist_arcane",		-- 5
+	--[27052]	= "resist_arcane",		-- 5
 	[23992]	= "resist_fire",		-- 1
 	[24439]	= "resist_fire",		-- 2
 	[24444]	= "resist_fire",		-- 3
 	[24445]	= "resist_fire",		-- 4
-	[27053]	= "resist_fire",		-- 5
+	--[27053]	= "resist_fire",		-- 5
 	[24446]	= "resist_frost",		-- 1
 	[24447]	= "resist_frost",		-- 2
 	[24448]	= "resist_frost",		-- 3
 	[24449]	= "resist_frost",		-- 4
-	[27054]	= "resist_frost",		-- 5
+	--[27054]	= "resist_frost",		-- 5
 	[24492]	= "resist_nature",		-- 1
 	[24502]	= "resist_nature",		-- 2
 	[24503]	= "resist_nature",		-- 3
 	[24504]	= "resist_nature",		-- 4
-	[27055]	= "resist_nature",		-- 5
+	--[27055]	= "resist_nature",		-- 5
 	[24488]	= "resist_shadow",		-- 1
 	[24505]	= "resist_shadow",		-- 2
 	[24506]	= "resist_shadow",		-- 3
 	[24507]	= "resist_shadow",		-- 4
-	[27056]	= "resist_shadow",		-- 5
+	--[27056]	= "resist_shadow",		-- 5
 
 	[4187]	= "stamina",		-- 1
 	[4188]	= "stamina",		-- 2
@@ -271,7 +271,7 @@ FHH_SpellIDsToTokens = {
 	[4194]	= "stamina",		-- 8
 	[5041]	= "stamina",		-- 9
 	[5042]	= "stamina",		-- 10
-	[27062]	= "stamina",		-- 11
+	--[27062]	= "stamina",		-- 11
 };
 
 FHH_TrainerSpells = {
