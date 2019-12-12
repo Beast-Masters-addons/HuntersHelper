@@ -383,10 +383,10 @@ function FHH_MinimapButtonCheck()
 			FHH_MinimapFrame:Show();
 			FHH_MoveMinimapButton();
 			FHH_MinimapUpdateCount();
-			this:RegisterEvent("ZONE_CHANGED_NEW_AREA");
+			FHH_MinimapFrame:RegisterEvent("ZONE_CHANGED_NEW_AREA");
 		else
 			FHH_MinimapFrame:Hide();
-			this:UnregisterEvent("ZONE_CHANGED_NEW_AREA");
+			FHH_MinimapFrame:UnregisterEvent("ZONE_CHANGED_NEW_AREA");
 		end
 	end
 end
