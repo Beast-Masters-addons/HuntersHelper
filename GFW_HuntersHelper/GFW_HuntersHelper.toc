@@ -1,8 +1,8 @@
-## Interface: 20400
-## Version: 2.4.2
-## X-Revision: $Rev: 657 $
-## X-Date: $Date: 2008-05-05 19:33:49 -0700 (Mon, 05 May 2008) $
-## Author: Gazmik Fizzwidget
+## Interface: 11303
+## Version: @project-version@
+## X-Revision: @project-revision@
+## X-Date: @project-date-iso@
+## Author: Gazmik Fizzwidget, datagutten
 ## X-Website: http://fizzwidget.com/huntershelper
 ## X-Appcast: http://fizzwidget.com/notes/huntershelper/feed
 ## Title: Fizzwidget Hunter's Helper
