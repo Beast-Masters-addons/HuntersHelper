@@ -18,9 +18,9 @@ FHH_UIColors = {
 	
 	trained		= GRAY_FONT_COLOR,
 	trainable	= ITEM_QUALITY_COLORS[3],
-	untrainable	= QuestDifficultyColor["verydifficult"],
-	nevertrain	= QuestDifficultyColor["verydifficult"],
-	learning	= QuestDifficultyColor["difficult"],
+	untrainable	= QuestDifficultyColors["verydifficult"],
+	nevertrain	= QuestDifficultyColors["verydifficult"],
+	learning	= QuestDifficultyColors["difficult"],
 };
 
 
