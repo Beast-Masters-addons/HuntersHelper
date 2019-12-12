@@ -1325,6 +1325,14 @@ end
 
 -- training points display
 
+function CraftIsPetTraining()
+	if GetCraftButtonToken() == 'TRAIN' then
+		return true
+	else
+		return false
+	end
+end
+
 function FHH_UIUpdateTrainingPoints()
 	local totalPoints, spent = GetPetTrainingPoints();
 	if ( CraftIsPetTraining() ) then
