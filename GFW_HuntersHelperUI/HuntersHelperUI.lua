@@ -968,7 +968,7 @@ function FHH_UIListButton_OnEnter(self)
 	end
 end
 
-function FHH_UIListButton_OnClick(self, button)
+function FHH_UIListButton_OnClick(self, _)
 	local clickedIndex = self:GetID();
 	local clickedItem = FHH_UIDisplayList[clickedIndex];
 
