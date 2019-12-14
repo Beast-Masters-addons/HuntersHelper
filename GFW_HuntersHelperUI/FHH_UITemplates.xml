@@ -37,6 +37,11 @@
 				FHH_UIRankButton_OnClick(self, arg1);
 			</OnClick>
 		</Scripts>
+		<Layers>
+			<Layer>
+				<FontString font="GameFontNormalSmall" name="$parentText" justifyH="CENTER"/>
+			</Layer>
+		</Layers>
 	</Button>
 	<Button name="FHH_UIDetailItemTemplate" inherits="QuestItemTemplate" virtual="true">
 		<Layers>

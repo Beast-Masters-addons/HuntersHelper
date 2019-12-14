@@ -582,17 +582,16 @@ function FHH_UIShowRanksBar(spellToken)
 	
 	local ranks = FHH_RequiredLevel[spellToken];
 	for i = 1, FHH_UI_NUM_RANK_BUTTONS do
-		local button = getglobal("FHH_UIRank"..i);
-        local text = getglobal("FHH_UIRank"..i.."SubText");
+		local button = _G["FHH_UIRank"..i]
+        local rankText = _G["FHH_UIRank"..i.."Text"];
 		if (ranks[i]) then
 			button:Show();
-            text:SetText(i);
+            rankText:SetText(i);
 			button.spell = spellToken;
 			button.rank = i;
-							
 			button.status = FHH_UISpellAndRankStatus(spellToken, i);
 			local color = FHH_UIColors[button.status];
-            text:SetTextColor(color.r, color.g, color.b);
+            rankText:SetTextColor(color.r, color.g, color.b);
 
 			-- Place the highlight and lock the highlight state
 			if ( FHH_UISelectedRank == i ) then
