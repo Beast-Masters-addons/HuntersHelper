@@ -413,48 +413,63 @@ function FHH_UIUpdate()
 	for i=1, FHH_UI_MAX_LIST_DISPLAYED, 1 do
 		local listIndex = i + listOffset;
 		local listItem = FHH_UIDisplayList[listIndex];
-		local listButton = getglobal("FHH_UIList"..i);
-		
-		if ( listIndex <= numListItems ) then	
+        local skillButton = _G["FHH_UIList"..i];
+		local listButton = skillButton
+
+        if ( listIndex <= numListItems ) then
 			-- Set button widths if scrollbar is shown or hidden
 			if ( FHH_UIListScrollFrame:IsShown() ) then
 				listButton:SetWidth(293);
 			else
 				listButton:SetWidth(323);
 			end
-			
-			listButton:SetText(listItem.name);
+            local skillSubText = _G["FHH_UIList"..i.."SubText"];
+
 			listButton:SetID(listIndex);
 			listButton:Show();
 			
 			-- Handle headers
 			if ( listItem.header ) then
-				listButton:SetTextColor(NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b);
+                local skillText = _G["FHH_UIList"..i.."Text"];
+                skillText:SetText(listItem.name);
+                skillButton:SetNormalFontObject("GameFontNormal");
+
+                skillSubText:Hide();
 				if ( listItem.expanded ) then
 					listButton:SetNormalTexture("Interface\\Buttons\\UI-MinusButton-Up");
 				else
 					listButton:SetNormalTexture("Interface\\Buttons\\UI-PlusButton-Up");
 				end
-				getglobal("FHH_UIList"..i.."Highlight"):SetTexture("Interface\\Buttons\\UI-PlusButton-Hilight");
-				getglobal("FHH_UIList"..i):UnlockHighlight();
+                _G["FHH_UIList"..i.."Highlight"]:SetTexture("Interface\\Buttons\\UI-PlusButton-Hilight");
+
 				listButton.status = nil;
 				listButton.spell = nil;
 			else
 				if ( not listItem ) then
 					return;	-- we shouldn't get here
 				end
+                skillButton:SetNormalTexture("");
+                _G["FHH_UIList"..i.."Highlight"]:SetTexture("");
+                local skillText = _G["FHH_UIList"..i.."Text"];
+                skillText:SetText("  "..listItem.name)
 
 				local color = FHH_UIColors[listItem.status];
-				listButton:SetTextColor(color.r, color.g, color.b);
+                if ( listItem.status == "available" ) then
+                    listButton:SetNormalFontObject("GameFontNormalLeftGreen");
+                elseif ( listItem.status == "used" ) then
+                    listButton:SetNormalFontObject("GameFontDisable");
+                else
+                    listButton:SetNormalFontObject("GameFontNormalLeftRed");
+                end
+
 				listButton.status = listItem.status;
 				listButton.spell = listItem.id;
 								
 				listButton:SetNormalTexture("");
-				getglobal("FHH_UIList"..i.."Highlight"):SetTexture("");
 				
 				-- Place the highlight and lock the highlight state
 				if ( FHH_UIListSelectionIndex == listIndex ) then
-					FHH_UIHighlight:SetVertexColor(listButton:GetTextColor());
+					FHH_UIHighlight:SetVertexColor(color.r, color.g, color.b);
 					FHH_UIHighlightFrame:SetPoint("TOPLEFT", "FHH_UIList"..i, "TOPLEFT", 0, 0);
 					FHH_UIHighlightFrame:Show();
 					listButton:LockHighlight();
@@ -568,19 +583,21 @@ function FHH_UIShowRanksBar(spellToken)
 	local ranks = FHH_RequiredLevel[spellToken];
 	for i = 1, FHH_UI_NUM_RANK_BUTTONS do
 		local button = getglobal("FHH_UIRank"..i);
+        local text = getglobal("FHH_UIRank"..i.."SubText");
 		if (ranks[i]) then
 			button:Show();
-			button:SetText(i);
+            text:SetText(i);
 			button.spell = spellToken;
 			button.rank = i;
 							
 			button.status = FHH_UISpellAndRankStatus(spellToken, i);
 			local color = FHH_UIColors[button.status];
-			button:SetTextColor(color.r, color.g, color.b);
-			
+            text:SetTextColor(color.r, color.g, color.b);
+
 			-- Place the highlight and lock the highlight state
 			if ( FHH_UISelectedRank == i ) then
-				FHH_UIRankHighlight:SetVertexColor(button:GetTextColor());
+				--FHH_UIRankHighlight:SetVertexColor(button:GetTextColor());
+				FHH_UIRankHighlight:SetVertexColor(color.r, color.g, color.b);
 				FHH_UIRankHighlightFrame:SetPoint("TOPLEFT", "FHH_UIRank"..i, "TOPLEFT", 0, 0);
 				FHH_UIRankHighlightFrame:Show();
 				button:LockHighlight();
