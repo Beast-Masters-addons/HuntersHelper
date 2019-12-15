@@ -7,7 +7,7 @@
 				FHH_OnLoad(self);
 			</OnLoad>
 			<OnEvent>
-				FHH_OnEvent(self, event, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
+				FHH_OnEvent(self, event, ...);
 			</OnEvent>
 		</Scripts>
 	</Frame>

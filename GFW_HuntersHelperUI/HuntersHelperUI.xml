@@ -762,7 +762,7 @@
 				FHH_UIOnLoad(self);
 			</OnLoad>
 			<OnEvent>
-				FHH_UIOnEvent(self);
+				FHH_UIOnEvent(self, event, ...);
 			</OnEvent>
 			<OnShow>
 				--PlaySound("igCharacterInfoOpen");

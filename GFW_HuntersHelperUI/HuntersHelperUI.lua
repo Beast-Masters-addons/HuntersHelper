@@ -47,13 +47,13 @@ function FHH_UIOnShow()
 	FHH_UIUpdate();
 end
 
-function FHH_UIOnEvent(self)
+function FHH_UIOnEvent(self, event, ...)
+    local arg1 = ...
 	if (event == "ADDON_LOADED" and arg1 == "GFW_HuntersHelperUI") then
-	
 		local viewBy = FHH_UIViewByZone and FHH_UI_VIEW_BY_ZONE or FHH_UI_VIEW_BY_ABILITY;
 		UIDropDownMenu_SetSelectedValue(FHH_UIViewByDropDown, viewBy, 1);
 		UIDropDownMenu_SetText(FHH_UIViewByDropDown, viewBy);
-		
+
 		self:UnregisterEvent("ADDON_LOADED");
 
 		self:RegisterEvent("UNIT_PET_TRAINING_POINTS");
@@ -65,7 +65,7 @@ function FHH_UIOnEvent(self)
 		else
 			SetPortraitTexture(FHH_UIPortrait, "player");
 		end
-		
+
 	elseif ( event == "UNIT_PET" ) then
 
 		if ( UnitExists("pet") and FHH_ReplacingCraftFrame) then
@@ -73,7 +73,7 @@ function FHH_UIOnEvent(self)
 		else
 			SetPortraitTexture(FHH_UIPortrait, "player");
 		end
-		
+
 	elseif ( event == "CRAFT_UPDATE" ) then
 
 		if ( UnitExists("pet") and FHH_ReplacingCraftFrame ) then
@@ -86,7 +86,7 @@ function FHH_UIOnEvent(self)
 		--FHH_UIUpdateDisplayList();
 		--FHH_UISetSelection(FHH_UIListSelectionIndex, FHH_UISelectedRank);
 		--FHH_UIUpdate();
-		
+
 	elseif ( event == "UNIT_PET_TRAINING_POINTS" ) then
 		FHH_UIUpdateTrainingPoints();
 

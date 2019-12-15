@@ -54,8 +54,8 @@ function FHH_OnLoad(self)
 	
 end
 
-function FHH_OnEvent(self, event, arg1, ...)
-
+function FHH_OnEvent(self, event, ...)
+	local arg1 = ...
 	--DevTools_Dump({event=event, arg1=arg1, arg2=arg2, arg3=arg3, arg4=arg4, arg5=arg5, arg6=arg6, arg7=arg7, arg8=arg8, arg9=arg9});
 
 	if ( event == "PLAYER_ENTERING_WORLD" or (event == "ADDON_LOADED" and arg1 == ADDON_NAME)) then
@@ -148,7 +148,7 @@ function FHH_OnEvent(self, event, arg1, ...)
 			if (not IsAddOnLoaded("GFW_HuntersHelperUI")) then
 				UIParentLoadAddOn("GFW_HuntersHelperUI");
 			end
-			FHH_HideCraftFrame();
+			FHH_HideCraftFrame(self);
 			FHH_ScanCraftFrame();
 			ShowUIPanel(FHH_UI);
 			FHH_ReplacingCraftFrame = true;
