@@ -143,7 +143,7 @@ function FHH_OnEvent(self, event, ...)
 		
 	elseif ( event == "CRAFT_SHOW" and not BT_Version) then
 
-		local name, title, notes, enabled, loadable, reason, security = GetAddOnInfo("GFW_HuntersHelperUI");
+		local _, _, _, _, loadable, _, _ = GetAddOnInfo("GFW_HuntersHelperUI");
 		if (loadable and CraftIsPetTraining()) then
 			if (not IsAddOnLoaded("GFW_HuntersHelperUI")) then
 				UIParentLoadAddOn("GFW_HuntersHelperUI");
@@ -344,7 +344,7 @@ function FHH_ChatCommandHandler(msg)
 end
 
 function FHH_ShowUI()
-	local name, title, notes, enabled, loadable, reason, security = GetAddOnInfo("GFW_HuntersHelperUI");
+	local _, _, _, _, loadable, _, _ = GetAddOnInfo("GFW_HuntersHelperUI");
 
 	if (not BT_Version ) then
 		-- don't replace the training window if Awbee's BeastTraining mod already is
@@ -599,8 +599,8 @@ function FHH_ScanCraftFrame()
 		if (rankNum and tonumber(rankNum)) then
 			rankNum = tonumber(rankNum);
 		end
-		local craftIcon = GetCraftIcon(craftIndex);
-		local spellToken = FHH_SpellTokenForIcon(craftIcon, craftName);
+		local craftIconId = GetCraftIcon(craftIndex);
+		local spellToken = FHH_SpellTokenForIcon(craftIconId, craftName);
 		local nameSpellToken = FHH_SpellTokenforName(craftName);
 		if (spellToken and nameSpellToken and spellToken ~= nameSpellToken) then
 			if (FHH_NewInfo == nil) then
@@ -700,7 +700,6 @@ function FHH_Find(spellToken, rankNum)
 	end
 	if (rankTable == nil or (type(rankTable) == "table" and GFWTable.Count(rankTable) == 0)) then
 		if (newRankTable == nil or (type(rankTable) == "table" and GFWTable.Count(newRankTable) == 0) == 0) then
-			local version = GetAddOnMetadata(ADDON_NAME, "Version");
 			GFWUtils.Print(format(FHH_FIND_MISSING_INFO, GFWUtils.Hilite(niceSpellName)));
 			return;
 		else
@@ -758,12 +757,12 @@ function FHH_Find(spellToken, rankNum)
 		end
 	else
 		local knownRanks = {};
-		for rankNum in pairs(rankTable) do
-			table.insert(knownRanks, rankNum);
+		for rankTableNum in pairs(rankTable) do
+			table.insert(knownRanks, rankTableNum);
 		end
 		local newRanks = {};
-		for rankNum in pairs(newRankTable or {}) do
-			table.insert(newRanks, rankNum);
+		for rankTableNum in pairs(newRankTable or {}) do
+			table.insert(newRanks, rankTableNum);
 		end
 		local allRanks = GFWTable.Merge(knownRanks, newRanks);
 		GFWUtils.Print(format(FHH_FIND_RANKS_LISTED, GFWUtils.Hilite(niceSpellName))..table.concat(allRanks, " "));
@@ -901,7 +900,7 @@ function FHH_GenerateFindReport(spellToken, rankNum, maxZones)
 		local shouldBreak;
 		for _, zones in pairs(zoneConnections) do
 			for _, zoneName in pairs(zones) do
-				local critterList = FHH_FindCreatures(spellToken, rankNum, zoneName);
+				critterList = FHH_FindCreatures(spellToken, rankNum, zoneName);
 				if (#critterList > 0) then
 					table.insert(reportLines, {zone=GFWZones.LocalizedZone(zoneName), critters=critterList});
 					if (#reportLines >= maxZones) then
