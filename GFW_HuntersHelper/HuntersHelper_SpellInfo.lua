@@ -77,7 +77,6 @@ FHH_LearnableBy = {
 	["shell"] = { FHH_TURTLE },
 	["thunderstomp"] = { FHH_GORILLA },
 	["firebreath"] = { FHH_DRAGONHAWK },
-	["gore"] = { FHH_RAVAGER, FHH_BOAR },
 	["warp"] = { FHH_WARP_STALKER },
 	["spit"] = { FHH_SERPENT },
 };
@@ -105,7 +104,6 @@ FHH_RequiredLevel = {
 	["shell"] = { 20 },
 	["thunderstomp"] = { 30, 40, 50 },
 	["firebreath"] = { 1, 60 },
-	["gore"] = { 1, 8, 16, 24, 32, 40, 48, 56, 63 },
 	["warp"] = { 60 },
 	["spit"] = { 15, 45, 60 },
 	["reflexes"] = 30,
@@ -166,17 +164,7 @@ FHH_SpellIDsToTokens = {
 	
 	--[34889]	= "firebreath",		-- 1
 	--[35323]	= "firebreath",		-- 2
-	
-	--[35290]	= "gore",		-- 1
-	--[35291]	= "gore",		-- 2
-	--[35292]	= "gore",		-- 3
-	--[35293]	= "gore",		-- 4
-	--[35294]	= "gore",		-- 5
-	--[35295]	= "gore",		-- 6
-	--[35296]	= "gore",		-- 7
-	--[35297]	= "gore",		-- 8
-	--[35298]	= "gore",		-- 9
-	
+
 	[24604]	= "howl",		-- 1
 	[24605]	= "howl",		-- 2
 	[24603]	= "howl",		-- 3
