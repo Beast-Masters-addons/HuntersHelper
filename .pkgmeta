@@ -1,0 +1,9 @@
+package-as: GFW_HuntersHelper
+
+ignore:
+  - scripts
+  - FrameXML
+
+move-folders:
+  HuntersHelper/GFW_HuntersHelper: GFW_HuntersHelper
+  HuntersHelper/GFW_HuntersHelperUI: GFW_HuntersHelperUI
