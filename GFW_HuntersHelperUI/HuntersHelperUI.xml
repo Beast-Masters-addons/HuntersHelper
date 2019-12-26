@@ -720,30 +720,13 @@
 				<Anchors>
 					<Anchor point="CENTER" relativeTo="$parent" relativePoint="TOPLEFT">
 						<Offset>
-							<AbsDimension x="224" y="-422"/>
-						</Offset>
-					</Anchor>
-				</Anchors>
-				<Scripts>
-					<OnClick>
-						FHH_ShowOptions();
-					</OnClick>
-				</Scripts>
-			</Button>
-			<Button name="$parentTrainButton" inherits="UIPanelButtonTemplate" text="TRAIN">
-				<Size>
-					<AbsDimension x="80" y="22"/>
-				</Size>
-				<Anchors>
-					<Anchor point="CENTER" relativeTo="$parent" relativePoint="TOPLEFT">
-						<Offset>
 							<AbsDimension x="305" y="-422"/>
 						</Offset>
 					</Anchor>
 				</Anchors>
 				<Scripts>
 					<OnClick>
-						FHH_UITrainButton_OnClick(arg1);
+						FHH_ShowOptions();
 					</OnClick>
 				</Scripts>
 			</Button>

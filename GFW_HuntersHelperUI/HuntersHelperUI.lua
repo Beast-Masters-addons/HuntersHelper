@@ -9,6 +9,7 @@ FHH_UI_NUM_RANK_BUTTONS = 13;
 
 FHH_UIFilterKnownSkills = {};
 FHH_UICollapsedHeaders = {};
+FHH_UITrainButton = CraftCreateButton
 
 local rareColor = {GetItemQualityColor(3)};
 FHH_UIColors = {
@@ -482,7 +483,7 @@ function FHH_UIUpdate()
 end
 
 function FHH_UISetSelection(id, rank)
-
+	FHH_UITrainButton:SetParent(FHH_UI)
 	FHH_UITrainButton:Disable();
 
 	FHH_UIListSelectionIndex = id;
@@ -1361,7 +1362,4 @@ function FHH_UICraftIndexForSpell(spellToken, rank)
 end
 
 function FHH_UITrainButton_OnClick(_)
-	local listItem = FHH_UIDisplayList[FHH_UIListSelectionIndex];
-	local craftIndex = FHH_UICraftIndexForSpell(listItem.id, FHH_UISelectedRank);
-	DoCraft(craftIndex);
 end
