@@ -91,15 +91,16 @@ local function optionsShow(panel)
 		panel.existingValues[key] = value;
 		local control = getglobal(name.."_"..key);
 		if (control) then
-			local controlType = control:GetFrameType();
-			if (controlType == "CheckButton") then
-				control:SetChecked(value);
-				checkDependentControls(control);
-			elseif (controlType == "Slider") then
+			--local controlType = control:GetFrameType();
+			--TODO: Find a better way to identify control type
+			if (control:GetName() == "FHH_OptionsPanel_MinimapPosition") then
 				control:SetValue(value);
 			elseif (control.menuOptions) then
 				UIDropDownMenu_Initialize(control, control.initialize);
-				UIDropDownMenu_SetSelectedValue(control, value);	
+				UIDropDownMenu_SetSelectedValue(control, value);
+			else
+				control:SetChecked(value);
+				checkDependentControls(control);
 			end
 		end
 	end
@@ -203,7 +204,7 @@ end
 -- panel:CreateSlider(key, min, max, step)
 local function optionsPanelCreateSlider(panel, key, minValue, maxValue, step)
 	local name = panel:GetName();
-	local slider = CreateFrame("Slider", name.."_"..key, panel, "InterfaceOptionsSliderTemplate");
+	local slider = CreateFrame("Slider", name.."_"..key, panel, "OptionsSliderTemplate");
 	slider:SetScript("OnValueChanged", optionsValueChangedSlider);
 	slider:SetMinMaxValues(minValue or 0, maxValue or 100);
 	slider:SetValueStep(step or 1);
