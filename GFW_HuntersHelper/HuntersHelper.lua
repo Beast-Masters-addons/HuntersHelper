@@ -595,6 +595,9 @@ function FHH_ScanCraftFrame()
 	
 	for craftIndex = 1, numCrafts do
 		local craftName, craftSubSpellName, craftType, _, _, _, requiredLevel = GetCraftInfo(craftIndex);
+		if not craftSubSpellName then
+			return
+		end
 		local _, _, rankNum = string.find(craftSubSpellName, "(%d+)");
 		if (rankNum and tonumber(rankNum)) then
 			rankNum = tonumber(rankNum);
