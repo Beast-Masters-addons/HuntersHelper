@@ -1513,11 +1513,9 @@ local function buildOptionsUI(panel)
 end
 
 function FHH_ShowOptions()
-	if (InterfaceOptionsFrame_OpenToFrame) then
-		InterfaceOptionsFrame_OpenToFrame(FHH_OptionsPanel);
-	else
-		GFWUtils.Note("Hunter's Helper Options UI is only available in WoW 2.4.");
-	end
+	InterfaceOptionsFrame_OpenToCategory(FHH_OptionsPanel);
+	--Call a second time to work around bug: https://www.wowinterface.com/forums/showthread.php?t=54599
+	InterfaceOptionsFrame_OpenToCategory(FHH_OptionsPanel);
 end
 
 function GFW_HuntersHelper:Initialize()
