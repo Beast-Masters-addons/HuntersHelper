@@ -454,13 +454,7 @@ function FHH_UIUpdate()
                 skillText:SetText("  "..listItem.name)
 
 				local color = FHH_UIColors[listItem.status];
-                if ( listItem.status == "available" ) then
-                    listButton:SetNormalFontObject("GameFontNormalLeftGreen");
-                elseif ( listItem.status == "used" ) then
-                    listButton:SetNormalFontObject("GameFontDisable");
-                else
-                    listButton:SetNormalFontObject("GameFontNormalLeftRed");
-                end
+				skillText:SetTextColor(color.r, color.g, color.b);
 
 				listButton.status = listItem.status;
 				listButton.spell = listItem.id;
