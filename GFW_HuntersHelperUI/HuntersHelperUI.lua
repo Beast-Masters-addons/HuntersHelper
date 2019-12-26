@@ -1194,7 +1194,7 @@ function FHH_UIKnownDropDown_Initialize()
 end
 
 function FHH_UIKnownDropDown_OnClick(self)
-	FHH_UIFilterKnownSkills[self.value] = not (UIDropDownMenuButton_GetChecked() == 1);
+	FHH_UIFilterKnownSkills[self.value] = not (UIDropDownMenuButton_GetChecked(self) == true);
 	FHH_UIUpdateList();
 	FHH_UIUpdateDisplayList();
 	FHH_UISetSelection(FHH_UIListSelectionIndex, FHH_UISelectedRank);
