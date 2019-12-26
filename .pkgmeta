@@ -5,5 +5,5 @@ ignore:
   - FrameXML
 
 move-folders:
-  HuntersHelper/GFW_HuntersHelper: GFW_HuntersHelper
-  HuntersHelper/GFW_HuntersHelperUI: GFW_HuntersHelperUI
+  GFW_HuntersHelper/GFW_HuntersHelperUI: GFW_HuntersHelperUI
+  GFW_HuntersHelper/GFW_HuntersHelper: GFW_HuntersHelper
