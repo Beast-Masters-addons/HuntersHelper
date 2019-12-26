@@ -154,9 +154,9 @@ local function optionsClickCheckButton(self)
 	local key = string.gsub(self:GetName(), name.."_", "");
 	if (self.invert) then
 		key = "No"..key;
-		addonObj.db.profile[key] = not (self:GetChecked() == 1);
+		addonObj.db.profile[key] = not (self:GetChecked() == true);
 	else
-		addonObj.db.profile[key] = (self:GetChecked() == 1);
+		addonObj.db.profile[key] = (self:GetChecked() == true);
 	end
 
 	checkDependentControls(self);
