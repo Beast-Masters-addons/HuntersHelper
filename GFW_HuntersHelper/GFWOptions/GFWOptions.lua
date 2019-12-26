@@ -142,11 +142,12 @@ end
 ------------------------------------------------------------------------------
 
 local function optionsClickCheckButton(self)
-	if ( self:GetChecked() ) then
-		PlaySound("igMainMenuOptionCheckBoxOn");
-	else
-		PlaySound("igMainMenuOptionCheckBoxOff");
-	end
+	--TODO: Fix this
+	--if ( self:GetChecked() ) then
+	--	PlaySound("igMainMenuOptionCheckBoxOn");
+	--else
+	--	PlaySound("igMainMenuOptionCheckBoxOff");
+	--end"""
 	
 	local panel = self:GetParent();
 	local addonObj = getglobal(panel.addon);
