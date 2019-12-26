@@ -51,6 +51,7 @@ FHH_BeastInfo = {
 ["Crag Boar"]                  	= {f=FHH_BOAR,        	z="Dun Morogh",               	min=5,	max=6,			charge=1,	},
 ["Crag Coyote"]                	= {f=FHH_WOLF,        	z="Badlands",                 	min=35,	max=36,			bite=5,	dash=1,	},
 ["Crag Stalker"]               	= {f=FHH_CAT,         	z="Thousand Needles",         	min=25,	max=26,			cower=3,	},
+["Crawler"]                    	= {f=FHH_CRAB,        	z="Westfall",                 	min=11,	max=12,			claw=2	},
 ["Crazed Dragonhawk"]          	= {f=FHH_DRAGONHAWK,  	z="Eversong Woods",           	min=7,	max=8,			firebreath=1,	},
 ["Creepthess"]                 	= {f=FHH_SPIDER,      	z="Hillsbrad Foothills",      	min=24,			t=2,	bite=3,	},
 ["Dark Screecher"]             	= {f=FHH_BAT,         	z="Blackrock Depths",         	min=50,	max=52,			cower=5,	dive=3,	screech=3,	},
