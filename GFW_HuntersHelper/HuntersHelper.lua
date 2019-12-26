@@ -507,6 +507,7 @@ function FHH_ModifyTooltip(unit)
 					if (niceSpellName ~= "") then
 						local _, _, spellName, rankNum = string.find(niceSpellName, "^(.+) %(.+ (%d+)%)$");
 						if (spellName == nil or spellName == "" or tonumber(rankNum) == nil) then
+							local critter = '' --TODO: Check this message
 							GFWUtils.PrintOnce(GFWUtils.Red("Hunter's Helper Error: ").."Can't parse spell "..GFWUtils.Hilite(niceSpellName).." from "..GFWUtils.Hilite(critter)..".");
 						else
 							spellName = string.gsub(spellName, "^%s+", ""); -- strip leading spaces
