@@ -660,6 +660,9 @@ end
 FHH_CraftFrameSettings = {};
 
 function FHH_HideCraftFrame(self)
+	if not FHH_UI then
+		return
+	end
 	if (not FHH_CraftFrameSettings.hidden) then
 		FHH_CraftFrameSettings.hidden = true;
 	    FHH_CraftFrameSettings.strata = CraftFrame:GetFrameStrata();
