@@ -80,7 +80,7 @@
 				GameTooltip:Hide();
 			</OnLeave>
 			<OnUpdate>
-				CursorOnUpdate();
+				CursorOnUpdate(self);
 			</OnUpdate>
 			<OnClick>
 			</OnClick>
