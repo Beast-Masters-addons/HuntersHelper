@@ -4,6 +4,11 @@ ignore:
   - scripts
   - FrameXML
 
+externals:
+  libs/LibHunterPetInfo:
+    url: https://github.com/Beast-Masters-addons/LibHunterPetInfo
+    tag: latest
+
 move-folders:
   GFW_HuntersHelper/GFW_HuntersHelperUI: GFW_HuntersHelperUI
   GFW_HuntersHelper/GFW_HuntersHelper: GFW_HuntersHelper

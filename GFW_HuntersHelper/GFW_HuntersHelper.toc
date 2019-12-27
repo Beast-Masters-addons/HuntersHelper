@@ -14,6 +14,7 @@
 ## SavedVariablesPerCharacter: FHH_KnownSpells
 ## LoadManagers: AddonLoader
 ## X-LoadOn-Class: Hunter
+## OptionalDeps: LibHunterPetInfo
 
 GFWUtils.lua
 GFWTable.lua
@@ -24,7 +25,17 @@ Dongle.lua
 
 localization.lua
 localization_BeastNames.lua
-HuntersHelper_BeastInfo.lua
+#@no-lib-strip@
+libs\LibHunterPetInfo\addon\LibHunterPetInfo.lua
+
+libs\LibHunterPetInfo\data\AbilityNPC.lua
+libs\LibHunterPetInfo\data\PetFamilies.lua
+libs\LibHunterPetInfo\data\PetInfo.lua
+libs\LibHunterPetInfo\data\Zones.lua
+
+libs\LibHunterPetInfo\addon\FHH_compat.lua
+#@end-no-lib-strip@
+PetInfo.lua
 HuntersHelper_SpellInfo.lua
 HuntersHelper.lua
 HuntersHelper.xml
