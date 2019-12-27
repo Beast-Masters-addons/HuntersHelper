@@ -1532,11 +1532,8 @@ function GFW_HuntersHelper:Initialize()
 end
 
 function GFW_HuntersHelper:Enable()
--- conditionalize 2.4 stuff for now so we can run on 2.3
-	if (InterfaceOptions_AddCategory) then
-		GFWOptions:CreateMainPanel("GFW_HuntersHelper", "FHH_OptionsPanel", FHH_OPTIONS_SUBTEXT);
-		FHH_OptionsPanel.BuildUI = buildOptionsUI;
-	end
+	GFWOptions:CreateMainPanel("GFW_HuntersHelper", "FHH_OptionsPanel", FHH_OPTIONS_SUBTEXT);
+	FHH_OptionsPanel.BuildUI = buildOptionsUI;
 end
 
 function GFW_HuntersHelper:OptionsChanged()
