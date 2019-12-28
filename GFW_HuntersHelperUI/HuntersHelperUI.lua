@@ -483,8 +483,10 @@ function FHH_UIUpdate()
 end
 
 function FHH_UISetSelection(id, rank)
-	FHH_UITrainButton:SetParent(FHH_UI)
-	FHH_UITrainButton:Disable();
+	if FHH_ReplacingCraftFrame then
+		FHH_UITrainButton:SetParent(FHH_UI)
+		FHH_UITrainButton:Disable();
+	end
 
 	FHH_UIListSelectionIndex = id;
 	FHH_UISelectedRank = rank;
