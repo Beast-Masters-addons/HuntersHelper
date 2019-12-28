@@ -31,6 +31,7 @@ FHH_NonSpellKeys = {
 	min=1,
 	max=1,
 };
+local db
 
 function CraftIsPetTraining()
 	if GetCraftButtonToken() == 'TRAIN' then
@@ -61,6 +62,8 @@ function FHH_OnEvent(self, event, ...)
 	if ( event == "PLAYER_ENTERING_WORLD" or (event == "ADDON_LOADED" and arg1 == ADDON_NAME)) then
 		
 		FHH_GenerateSpellNamesToTokens();
+		db = _G['HuntersHelperDB']
+		if not db then error('Unable to load DB') end
 
 		_, realClass = UnitClass("player");
 		if (realClass == "HUNTER") then
@@ -92,13 +95,12 @@ function FHH_OnEvent(self, event, ...)
 		
 	elseif ( event == "UPDATE_MOUSEOVER_UNIT" ) then
 	
-		if ( UnitExists("mouseover") and not UnitPlayerControlled("mouseover") and not FHH_Options.NoBeastTooltip ) then
+		if ( UnitExists("mouseover") and not UnitPlayerControlled("mouseover") and db.beastTooltip ) then
 
 			local _, myClass = UnitClass("player");
-			if (FHH_Options.BeastTooltipOnlyHunter and myClass ~= "HUNTER") then return; end
-			
-			FHH_ModifyTooltip("mouseover");
+			if (db.onlyHunter and myClass ~= "HUNTER") then return end
 
+			FHH_ModifyTooltip("mouseover");
 		end
 		
 	elseif ( event == "UNIT_AURA" ) then
@@ -387,7 +389,7 @@ end
 
 function FHH_MinimapButtonCheck()
 	if (FHH_MinimapFrame) then
-		if (FHH_Options.ShowMinimap) then
+		if (db.showMinimapButton) then
 			FHH_MinimapFrame:Show();
 			FHH_MoveMinimapButton();
 			FHH_MinimapUpdateCount();
@@ -1466,78 +1468,7 @@ function FHH_NameForSpellToken(token)
 		end
 	end
 end
-	
-------------------------------------------------------
--- Dongle & GFWOptions stuff
-------------------------------------------------------
-
-GFW_HuntersHelper = {};
-local GFWOptions = DongleStub("GFWOptions-1.0");
-
-local function buildOptionsUI(panel)
-
-	GFW_HuntersHelper.optionsText = {
-		BeastTooltip = FHH_OPTIONS_BEAST_TOOLTIP,
-		BeastTooltipOnlyHunter = FHH_OPTIONS_HUNTER_ONLY,
-		ShowAlreadyKnownBeasts = FHH_OPTIONS_SHOW_ALREADY_KNOWN,
-		UITooltip = FHH_OPTIONS_UI_TOOLTIP,
-		ShowMinimap = FHH_OPTIONS_MINIMAP,
-		MinimapPosition = FHH_OPTIONS_MINIMAP_POSITION,
-	};
-	
-	local widget, lastWidget;
-	widget = panel:CreateCheckButton("BeastTooltip", true);
-	widget:SetPoint("TOPLEFT", panel.contentAnchor, "BOTTOMLEFT", -2, -8);
-	lastWidget = widget;
-	
-	widget = panel:CreateCheckButton("BeastTooltipOnlyHunter", false);
-	widget:SetPoint("TOPLEFT", lastWidget, "BOTTOMLEFT", 16, -2);
-	lastWidget.dependentControls = { widget };
-	lastWidget = widget;
-
-	widget = panel:CreateCheckButton("ShowMinimap", false);
-	widget:SetPoint("TOPLEFT", lastWidget, "BOTTOMLEFT", -16, -2);
-	lastWidget = widget;
-
-	widget = panel:CreateSlider("MinimapPosition", -180, 180, 1);
-	widget:SetPoint("TOPLEFT", lastWidget, "BOTTOMLEFT", 4, -24);
-	lastWidget = widget;
-	
-	local s;	
-	s = panel:CreateFontString("FHH_OptionsPanel_PanelHeader", "ARTWORK", "GameFontNormal");
-	s:SetPoint("TOPLEFT", lastWidget, "BOTTOMLEFT", -4, -16);
-	s:SetText(FHH_OPTIONS_PANEL_HEADER);
-	lastWidget = s;
-
-	widget = panel:CreateCheckButton("ShowAlreadyKnownBeasts", false);
-	widget:SetPoint("TOPLEFT", lastWidget, "BOTTOMLEFT", 0, -2);
-	lastWidget = widget;
-
-	widget = panel:CreateCheckButton("UITooltip", true);
-	widget:SetPoint("TOPLEFT", lastWidget, "BOTTOMLEFT", 0, -2);
-
-end
 
 function FHH_ShowOptions()
-	InterfaceOptionsFrame_OpenToCategory(FHH_OptionsPanel);
-	--Call a second time to work around bug: https://www.wowinterface.com/forums/showthread.php?t=54599
-	InterfaceOptionsFrame_OpenToCategory(FHH_OptionsPanel);
+	LibStub("AceConfigDialog-3.0"):Open("HunterPetHelper_options")
 end
-
-function GFW_HuntersHelper:Initialize()
-	self.defaults = { profile = FHH_Defaults };
-	self.db = self:InitializeDB("GFW_HuntersHelperDB", self.defaults);
-	FHH_Options = self.db.profile;
-end
-
-function GFW_HuntersHelper:Enable()
-	GFWOptions:CreateMainPanel("GFW_HuntersHelper", "FHH_OptionsPanel", FHH_OPTIONS_SUBTEXT);
-	FHH_OptionsPanel.BuildUI = buildOptionsUI;
-end
-
-function GFW_HuntersHelper:OptionsChanged()
-	FHH_MinimapButtonCheck();
-end
-
-GFW_HuntersHelper = DongleStub("Dongle-1.2"):New("GFW_HuntersHelper", GFW_HuntersHelper);
-

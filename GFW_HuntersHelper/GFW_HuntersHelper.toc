@@ -10,18 +10,22 @@
 ## Title-zhTW: [職業]寵物技能助手 Fizzwidget Hunter's Helper
 ## Notes-zhTW: 幫助你查看可馴服的怪物會哪些寵物技能.
 ## X-Category: Hunter
-## SavedVariables: FHH_NewInfo, GFW_HuntersHelperDB
+## SavedVariables: FHH_NewInfo, HuntersHelperSettings
 ## SavedVariablesPerCharacter: FHH_KnownSpells
 ## LoadManagers: AddonLoader
 ## X-LoadOn-Class: Hunter
-## OptionalDeps: LibHunterPetInfo
+## OptionalDeps: LibHunterPetInfo, LibStub
+
+#@no-lib-strip@
+Libs.xml
+#@end-no-lib-strip@
+
+locale\locale_enUS.lua
+addon\options.lua
 
 GFWUtils.lua
 GFWTable.lua
 GFWZones.lua
-
-GFWOptions\Load.xml
-Dongle.lua
 
 localization.lua
 localization_BeastNames.lua

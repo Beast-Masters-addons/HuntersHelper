@@ -1,41 +1,7 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
 	..\FrameXML\UI.xsd">
 
-	<Script>
-				
-		function FHH_MinimapDrag_OnUpdate(arg1)
-			local xPos, yPos = GetCursorPosition();
-			local xMin, yMin = Minimap:GetLeft(), Minimap:GetBottom();
-
-			xPos = xMin - xPos / UIParent:GetScale() + 70;
-			yPos = yPos / UIParent:GetScale() - yMin - 70;
-
-			FHH_Options.MinimapPosition = math.deg(math.atan2(yPos, xPos));
-			FHH_MoveMinimapButton();
-		end
-
-		function FHH_MoveMinimapButton()
-			local default = FHH_Defaults.MinimapPosition;
-			local xPos = 52 - (80 * math.cos(math.rad(FHH_Options.MinimapPosition or default + 90)));
-			local yPos = (80 * math.sin(math.rad(FHH_Options.MinimapPosition or default + 90))) - 52;
-			FHH_MinimapFrame:SetPoint("TOPLEFT", "Minimap", "TOPLEFT", xPos, yPos);
-		end
-
-		function FHH_MinimapShineFadeIn()
-			-- Fade in the shine and then fade it out with the ComboPointShineFadeOut function
-			local fadeInfo = {};
-			fadeInfo.mode = "IN";
-			fadeInfo.timeToFade = 0.5;
-			fadeInfo.finishedFunc = FHH_MinimapShineFadeOut;
-			UIFrameFade(FHH_MinimapShine, fadeInfo);
-		end
-
-		--hack since a frame can't have a reference to itself in it
-		function FHH_MinimapShineFadeOut()
-			UIFrameFadeOut(FHH_MinimapShine, 0.5);
-		end
-
-	</Script>
+	<Script file="MiniMapScript.lua" />
 
 	<Frame name="FHH_MinimapDragFrame" parent="Minimap" hidden="true">
 		<Scripts>
@@ -121,7 +87,7 @@
 				FHH_MinimapShine:SetAlpha(0);
 				self:RegisterForClicks("LeftButtonUp","RightButtonUp");
 				self:RegisterForDrag("LeftButton");
-				FHH_MinimapButtonCheck();
+				--FHH_MinimapButtonCheck();
 			</OnLoad>
 			<OnMouseDown>
 				FHH_MinimapFrame_Icon:SetTexCoord(-0.05, 1.05, -0.05, 1.05);
