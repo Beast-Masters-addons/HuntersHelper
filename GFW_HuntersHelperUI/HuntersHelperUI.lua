@@ -418,6 +418,7 @@ function FHH_UIUpdate()
 			end
             local skillSubText = _G["FHH_UIList"..i.."SubText"];
 
+			skillButton:SetNormalFontObject("GameFontNormalLeft");
 			listButton:SetID(listIndex);
 			listButton:Show();
 
@@ -425,7 +426,7 @@ function FHH_UIUpdate()
 			if ( listItem.header ) then
                 local skillText = _G["FHH_UIList"..i.."Text"];
                 skillText:SetText(listItem.name);
-                skillButton:SetNormalFontObject("GameFontNormal");
+				skillText:SetTextColor(1, 0.82, 0) --TradeSkillTypeColor["header"]
 
                 skillSubText:Hide();
 				if ( listItem.expanded ) then
