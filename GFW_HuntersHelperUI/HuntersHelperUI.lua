@@ -9,7 +9,6 @@ FHH_UI_NUM_RANK_BUTTONS = 13;
 
 FHH_UIFilterKnownSkills = {};
 FHH_UICollapsedHeaders = {};
-FHH_UITrainButton = CraftCreateButton
 
 local rareColor = {GetItemQualityColor(3)};
 FHH_UIColors = {
@@ -473,8 +472,8 @@ end
 
 function FHH_UISetSelection(id, rank)
 	if FHH_ReplacingCraftFrame then
-		FHH_UITrainButton:SetParent(FHH_UI)
-		FHH_UITrainButton:Disable();
+		_G.CraftCreateButton:SetParent(FHH_UI)
+		_G.CraftCreateButton:Disable();
 	end
 
 	FHH_UIListSelectionIndex = id;
@@ -658,7 +657,7 @@ function FHH_UIShowSpellDetail(spellToken, rank)
 		end
 
 		if (craftType ~= "used") then
-			FHH_UITrainButton:Enable();
+			_G.CraftCreateButton:Enable();
 		end
 	else
 		FHH_UIDetailCost:SetText("");
@@ -1337,7 +1336,4 @@ function FHH_UICraftIndexForSpell(spellToken, rank)
 	else
 		return index;
 	end
-end
-
-function FHH_UITrainButton_OnClick(_)
 end
