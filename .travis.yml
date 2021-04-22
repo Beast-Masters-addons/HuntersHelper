@@ -1,7 +1,19 @@
 language: minimal
 
+jobs:
+  include:
+    - name: 'Classic'
+      install:
+        - export GAME_VERSION="classic"
+        - git clone https://github.com/Gethe/wow-ui-source tests/wow-ui-source -b classic
+
+    - name: 'TBC'
+      install:
+        - export GAME_VERSION="bc"
+        - git clone https://github.com/Gethe/wow-ui-source tests/wow-ui-source -b classic_beta
+
 script:
-  - curl -s https://raw.githubusercontent.com/BigWigsMods/packager/master/release.sh | bash -s -- -g 1.13.5
+  - curl -s https://raw.githubusercontent.com/BigWigsMods/packager/master/release.sh | bash -s -- -g $GAME_VERSION
 
 notifications:
   email:
