@@ -41,7 +41,12 @@ libs\LibHunterPetInfo\data\Zones.lua
 libs\LibHunterPetInfo\addon\FHH_compat.lua
 #@end-no-lib-strip@
 PetInfo.lua
-HuntersHelper_SpellInfo.lua
+#@version-classic@
+addon\data\HuntersHelper_SpellInfo.lua
+#@end-version-classic@
+#@version-bc@
+addon\data\HuntersHelper_SpellInfo_TBC.lua
+#@end-version-bc@
 HuntersHelper.lua
 HuntersHelper.xml
 FHH_MinimapButton.xml
