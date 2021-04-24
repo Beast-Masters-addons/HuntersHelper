@@ -30,16 +30,7 @@ GFWZones.lua
 
 localization.lua
 localization_BeastNames.lua
-#@no-lib-strip@
-libs\LibHunterPetInfo\addon\LibHunterPetInfo.lua
 
-libs\LibHunterPetInfo\data\AbilityNPC.lua
-libs\LibHunterPetInfo\data\PetFamilies.lua
-libs\LibHunterPetInfo\data\PetInfo.lua
-libs\LibHunterPetInfo\data\Zones.lua
-
-libs\LibHunterPetInfo\addon\FHH_compat.lua
-#@end-no-lib-strip@
 PetInfo.lua
 #@version-classic@
 addon\data\HuntersHelper_SpellInfo.lua
