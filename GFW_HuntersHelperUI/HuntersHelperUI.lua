@@ -663,8 +663,7 @@ function FHH_UIShowSpellDetail(spellToken, rank)
 	else
 		FHH_UIDetailCost:SetText("");
 	end
-		
-	local descriptionText;
+
 	if (craftIndex) then
 		FHH_UIDetailDescription:SetText(GetCraftDescription(craftIndex));
 		FHH_UIDetailDescription:SetTextColor(HIGHLIGHT_FONT_COLOR.r, HIGHLIGHT_FONT_COLOR.g, HIGHLIGHT_FONT_COLOR.b);
@@ -1263,6 +1262,9 @@ function FHH_UIDetailItem_OnEnter(self)
 		local requiredLevel = FHH_RequiredLevel[self.spellToken];
 		if (type(requiredLevel) == "table") then
 			requiredLevel = requiredLevel[self.rank];
+		end
+		if not requiredLevel then
+			print('Unable to find required level for rank '.. self.rank .. ' spell ' .. self.spellToken)
 		end
 		if ( UnitLevel("pet") >= requiredLevel ) then
 			GameTooltip:AddLine(format(ITEM_REQ_SKILL, format(TRAINER_PET_LEVEL, requiredLevel)),
