@@ -1,7 +1,18 @@
 ------------------------------------------------------
 -- HuntersHelper.lua
+-- @project-revision@ @project-date-iso@
 ------------------------------------------------------
 local ADDON_NAME = "GFW_HuntersHelper"
+
+local utils = _G['BMUtils']
+utils = _G.LibStub("BM-utils-1")
+local LibPet = _G['LibPet']
+local PetSpells = _G['PetSpells']
+local HHSpells = _G['HHSpells']
+local FHH_BeastInfo
+local Tourist = _G.LibStub('LibTouristClassic-1.0')
+local ZoneInfo = _G['ZoneInfo']
+local HHZoneLocale = _G['HHZoneLocale']
 
 -- Saved configuration & info
 FHH_KnownSpells = {};
@@ -60,8 +71,7 @@ function FHH_OnEvent(self, event, ...)
 	--DevTools_Dump({event=event, arg1=arg1, arg2=arg2, arg3=arg3, arg4=arg4, arg5=arg5, arg6=arg6, arg7=arg7, arg8=arg8, arg9=arg9});
 
 	if ( event == "PLAYER_ENTERING_WORLD" or (event == "ADDON_LOADED" and arg1 == ADDON_NAME)) then
-		
-		FHH_GenerateSpellNamesToTokens();
+		_G['HH_SpellNamesToId'] = PetSpells.idToName(true)
 		db = _G['HuntersHelperDB']
 		if not db then error('Unable to load DB') end
 
@@ -75,26 +85,12 @@ function FHH_OnEvent(self, event, ...)
 			self:RegisterEvent("CRAFT_CLOSE");
 			self:RegisterEvent("CHAT_MSG_SYSTEM");
 
-			if (FHH_KnownSpells == nil or GFWTable.Count(FHH_KnownSpells) == 0) then
-				if (loadable and realClass == "HUNTER" and UnitLevel("player") >= 10) then
-					-- find Beast Training 
-					local _, _, startIndex, endIndex = GetSpellTabInfo(1);
-					-- it's always on the General tab
-					for spellIndex = startIndex + 1, endIndex do
-						-- and it has the same icon in all locales
-						if (GetSpellTexture(spellIndex, BOOKTYPE_SPELL) == "Interface\\Icons\\Ability_Hunter_BeastCall02") then
-							GFWUtils.Print(FHH_NEED_SPELL_INFO);
-							break;
-						end
-					end
-				end
-			end
 			FHH_MinimapButtonCheck();
 		end
 		self:UnregisterEvent("ADDON_LOADED");
-		
+
 	elseif ( event == "UPDATE_MOUSEOVER_UNIT" ) then
-	
+
 		if ( UnitExists("mouseover") and not UnitPlayerControlled("mouseover") and db.beastTooltip ) then
 
 			local _, myClass = UnitClass("player");
@@ -102,9 +98,9 @@ function FHH_OnEvent(self, event, ...)
 
 			FHH_ModifyTooltip("mouseover");
 		end
-		
+
 	elseif ( event == "UNIT_AURA" ) then
-	
+
 		if ( arg1 == "player" and FHH_HasTameEffect("player") ) then
 			FHH_State.TamingCritter = UnitName("target");
 			local unlocalizedCreepName = GFWTable.KeyOf(FHH_Localized, FHH_State.TamingCritter);
@@ -113,9 +109,9 @@ function FHH_OnEvent(self, event, ...)
 			end
 			FHH_State.TamingType = UnitClassification("target");
 		end
-			
+
 	elseif ( event == "UNIT_NAME_UPDATE" ) then
-	
+
 		if ( arg1 == "pet" and FHH_State.TamingCritter ) then
 			local loyaltyDescription = GetPetLoyalty();
 			if (loyaltyDescription) then
@@ -125,7 +121,7 @@ function FHH_OnEvent(self, event, ...)
 					FHH_State.TamingCritter = nil;
 					FHH_State.TamingType = nil;
 					return;
-				end		
+				end
 			end
 			if (UnitName("pet") ~= UnitCreatureFamily("pet")) then
 				GFWUtils.Print("Got "..event.." but pet's UnitName() ~= UnitCreatureFamily(); ignoring.");
@@ -134,15 +130,14 @@ function FHH_OnEvent(self, event, ...)
 				return;
 			end
 			--GFWUtils.Print(event..": checking newly tamed pet");
-			FHH_CheckPetSpells();
 			FHH_State.TamingCritter = nil;
 			FHH_State.TamingType = nil;
 		end
 
 	elseif ( event == "ZONE_CHANGED_NEW_AREA" ) then
-		
+
 		FHH_MinimapUpdateCount(true);
-		
+
 	elseif ( event == "CRAFT_SHOW" and not BT_Version) then
 
 		local _, _, _, _, loadable, _, _ = GetAddOnInfo("GFW_HuntersHelperUI");
@@ -152,7 +147,8 @@ function FHH_OnEvent(self, event, ...)
 			end
 			FHH_HideCraftFrame(self);
 			FHH_ScanCraftFrame();
-			ShowUIPanel(FHH_UI);
+			HHSpells:scanCraftFrame()
+			ShowUIPanel(FHH_UI); --TODO: Do not call this in combat
 			FHH_ReplacingCraftFrame = true;
 		else
 			FHH_RestoreCraftFrame();
@@ -163,43 +159,25 @@ function FHH_OnEvent(self, event, ...)
 
 		if (CraftIsPetTraining()) then
 			FHH_ScanCraftFrame();
+			HHSpells:scanCraftFrame()
 		end
 
 	elseif ( event == "CRAFT_CLOSE" and FHH_ReplacingCraftFrame) then
-		
+
 		if (IsAddOnLoaded("GFW_HuntersHelperUI")) then
 			HideUIPanel(FHH_UI);
 		end
-		
+
 	elseif ( event == "CHAT_MSG_SYSTEM" ) then
 
 		local pattern = GFWUtils.FormatToPattern(ERR_LEARN_SPELL_S); -- "You have learned a new spell: %s."
 		local _, _, compositeSpellName = string.find(arg1, pattern);
 		if (compositeSpellName == nil) then return; end
-		
+
 		local _, _, spellName, rankNum = string.find(compositeSpellName, "(.+) %(.+ (%d+)%)");
 		if (spellName and rankNum and spellName ~= "" and rankNum ~= "" ) then
-			spellName = string.gsub(spellName, "^%s+", ""); -- strip leading spaces
-			spellName = string.gsub(spellName, "%s+$", ""); -- and trailing spaces
-			rankNum = tonumber(rankNum);
-			local token = FHH_SpellTokenforName(spellName);
-			if (FHH_NewInfo and FHH_NewInfo.SpellTokenAliases and FHH_NewInfo.SpellTokenAliases[token]) then
-				token = FHH_NewInfo.SpellTokenAliases[token];
-			end
-			if (token and (FHH_RequiredLevel[token] or (FHH_NewInfo and FHH_NewInfo.RequiredLevel and FHH_NewInfo.RequiredLevel[token]))) then
-				-- only track spells we know are hunter pet spells
-				if (FHH_KnownSpells == nil) then
-					FHH_KnownSpells = {};
-				end
-				if (FHH_KnownSpells[token] == nil) then
-					FHH_KnownSpells[token] = {};
-				end			
-				if (rankNum and not FHH_KnownSpells[token][rankNum]) then
-					FHH_KnownSpells[token][rankNum] = 1;
-				end
-			end
+			HHSpells:saveCurrentPetSpells()
 		end
-		
 	end
 
 end
@@ -238,33 +216,33 @@ function FHH_ChatCommandHandler(msg)
 	end
 		
 	if (msg == "onlyhunter") then
-		FHH_Options.NoBeastTooltip = nil;
-		FHH_Options.BeastTooltipOnlyHunter = true;
+		_G['HuntersHelperDB'].beastTooltip = true
+		_G['HuntersHelperDB'].onlyHunter = true
 		GFWUtils.Print(FHH_STATUS_ONLYHUNTER);
 		return;
 	end
 	if (msg == "on") then
-		FHH_Options.NoBeastTooltip = nil;
-		FHH_Options.BeastTooltipOnlyHunter = nil;
+		_G['HuntersHelperDB'].beastTooltip = true
+		_G['HuntersHelperDB'].onlyHunter = false
 		GFWUtils.Print(FHH_STATUS_ON);
 		return;
 	end
 	if (msg == "off") then
-		FHH_Options.NoBeastTooltip = true;
+		_G['HuntersHelperDB'].beastTooltip = false
 		GFWUtils.Print(FHH_STATUS_OFF);
 		return;
 	end
 
 	if (msg == "button" or msg == "minimap") then
-		FHH_Options.ShowMinimap = not FHH_Options.ShowMinimap;
+		_G['HuntersHelperDB'].showMinimapButton = not _G['HuntersHelperDB'].showMinimapButton
 		FHH_MinimapButtonCheck();
 		return;
 	end
 
 	if ( msg == "status" ) then
-		if ( not FHH_Options.NoBeastTooltip and FHH_Options.BeastTooltipOnlyHunter ) then
+		if _G['HuntersHelperDB'].beastTooltip and _G['HuntersHelperDB'].onlyHunter then
 			GFWUtils.Print(FHH_STATUS_ONLYHUNTER);
-		elseif ( FHH_Options.NoBeastTooltip ) then
+		elseif not _G['HuntersHelperDB'].beastTooltip then
 			GFWUtils.Print(FHH_STATUS_OFF);
 		else
 			GFWUtils.Print(FHH_STATUS_ON);
@@ -273,32 +251,26 @@ function FHH_ChatCommandHandler(msg)
 	end
 	
 	if (msg == "reset") then
-		FHH_NewInfo = nil;	
-		FHH_KnownSpells = {};
-		GFW_HuntersHelper.db:ResetProfile();
-		
+		_G.HunterPetHelper.db:ResetProfile();
 		GFWUtils.Print(FHH_STATUS_RESET);
-	
+
 		if (CraftIsPetTraining()) then
 			FHH_ScanCraftFrame();
+			HHSpells:scanCraftFrame()
 		else
 			GFWUtils.Print(FHH_NEED_SPELL_INFO);
 		end
 		
 		return;
 	end
-				
-	if (msg == "dynamic") then
-		FHH_SpellNamesToTokens = {};
-		FHH_LearnableBy = {};
-		FHH_RequiredLevel = {};
-		FHH_BeastInfo = {};
-		GFWUtils.Print("Hunter's Helper: only consulting dynamic tables until next reload.");
-		return;
-	end
 		
 	local _, _, cmd, spellQuery, rankNum = string.find(msg, "(find%w*) ([^%d]+) *(%d*)");
 	if (cmd == "find" or cmd == "findall") then
+		--TODO: Rewrite this
+		utils:error('Find command needs rewrite')
+		if true then
+			return
+		end
 		if (spellQuery == nil or spellQuery == "") then
 			GFWUtils.Print("Usage: "..GFWUtils.Hilite("/hh find <ability> <rank>"));
 			return;
@@ -355,16 +327,8 @@ function FHH_ShowUI()
 		if (loadable and realClass == "HUNTER" and UnitLevel("player") >= 10) then
 			-- find Beast Training and cast it if we can
 			-- this shows our UI and lets it get info from Craft APIs / substitute for the Training window
-			local _, _, startIndex, endIndex = GetSpellTabInfo(1);
-			-- it's always on the General tab
-			for spellIndex = startIndex + 1, endIndex do
-				-- and it has the same icon in all locales
-				if (GetSpellTexture(spellIndex, BOOKTYPE_SPELL) == "Interface\\Icons\\Ability_Hunter_BeastCall02") then
-					CastSpell(spellIndex, BOOKTYPE_SPELL);	
-					-- this API isn't protected for "casting" the "spell" that opens a craft/tradeskills window
-					return true;
-				end
-			end
+			utils:CastSpellById(5149)
+			return true
 		end
 	end
 
@@ -403,8 +367,9 @@ end
 
 function FHH_MinimapUpdateCount(shouldShine)
 	local zoneCritters = FHH_CurrentZoneLearnableBeasts();
-	if (#zoneCritters > 0) then
-		FHH_MinimapCount:SetText(#zoneCritters);
+	local count = GFWTable.Count(zoneCritters)
+	if (count > 0) then
+		FHH_MinimapCount:SetText(count);
 		FHH_MinimapFrame_Icon:SetVertexColor(0.5,0.5,0.5);
 		FHH_MinimapCount:Show();
 		if (shouldShine) then
@@ -423,48 +388,28 @@ function FHH_MinimapButtonTooltip()
 	GameTooltip:SetText(title .. " " .. version);
 	
 	local zoneCritters = FHH_CurrentZoneLearnableBeasts();
+	local zoneCrittersCount = GFWTable.Count(zoneCritters)
 	local color;
-	if (#zoneCritters > 0) then
+	if (zoneCrittersCount > 0) then
 		color = HIGHLIGHT_FONT_COLOR;
-		GameTooltip:AddLine(format(FHH_NUM_BEASTS_IN_ZONE, #zoneCritters), color.r, color.g, color.b);
-		
-		for _, beastName in pairs(zoneCritters) do
-			local beastString = (FHH_Localized[beastName] or beastName).." (";
-			local info = FHH_BeastInfo[beastName];
-			if (info.min > UnitLevel("player")) then
-				beastString = beastString..RED_FONT_COLOR_CODE..info.min..FONT_COLOR_CODE_CLOSE;
-			else
-				beastString = beastString..info.min;
-			end
-			if (info.max) then
-				if (info.max > UnitLevel("player")) then
-					beastString = beastString.."-"..RED_FONT_COLOR_CODE..info.max..FONT_COLOR_CODE_CLOSE;
+		--GameTooltip:AddLine(format(FHH_NUM_BEASTS_IN_ZONE, zoneCrittersCount), color.r, color.g, color.b);
+		GameTooltip:AddLine(FHH_NUM_BEASTS_IN_ZONE:format(zoneCrittersCount), color.r, color.g, color.b);
+
+		for petId, petInfo in pairs(zoneCritters) do
+			local beastString = LibPet.petLevelString(petInfo)
+
+			for spellIcon, rank in GFWTable.PairsByKeys(LibPet.petSkills(petId)) do
+				local spellId, spellName = PetSpells.getSpellFromIcon(spellIcon, rank)
+
+				local spellColor;
+				if HHSpells:isSpellKnown(spellIcon, rank) then
+					spellColor = GRAY_FONT_COLOR;
 				else
-					beastString = beastString.."-"..info.max;
+					spellColor = GREEN_FONT_COLOR;
 				end
-			end
-			if (info.t == nil) then
-				beastString = beastString..")";
-			elseif (info.t == 1) then	-- Elite
-				beastString = beastString.." "..ELITE..")";
-			elseif (info.t == 2) then	-- Rare
-				beastString = beastString.." "..FHH_UI_RARE_MOB..")";
-			elseif (info.t == 3) then	-- Rare Elite
-				beastString = beastString.." "..FHH_UI_RARE_ELITE_MOB..")";
-			end
-			
-			for spellToken, rank in GFWTable.PairsByKeys(info) do
-				if (not FHH_NonSpellKeys[spellToken]) then
-					local spellColor;
-					if (FHH_KnownSpells[spellToken] and (rank == nil or FHH_KnownSpells[spellToken][rank])) then
-						spellColor = GRAY_FONT_COLOR;
-					else
-						spellColor = GREEN_FONT_COLOR;
-					end
-					GameTooltip:AddDoubleLine(beastString, FHH_SpellDescription(spellToken, rank, true),
-						color.r, color.g, color.b, spellColor.r, spellColor.g, spellColor.b);
-					beastString = " ";
-				end
+				GameTooltip:AddDoubleLine(beastString, FHH_SpellDescription(spellName, rank, true),
+					color.r, color.g, color.b, spellColor.r, spellColor.g, spellColor.b);
+				beastString = " ";
 			end
 		end
 	else
@@ -475,104 +420,58 @@ function FHH_MinimapButtonTooltip()
 	
 end
 
+local function tooltipIsBeastLore()
+	local pattern = _G.GFWUtils.FormatToPattern(_G.PET_SPELLS_TEMPLATE)
+	for lineNum = 1, _G['GameTooltip']:NumLines() do
+		local line = _G["GameTooltipTextLeft" .. lineNum]
+		local _, _, match = string.find(line:GetText(), pattern)
+		if match then
+			return line
+		end
+	end
+	return false
+end
+
+
 function FHH_ModifyTooltip(unit)
 	local creepName = UnitName(unit);
 	local creepLevel = UnitLevel(unit);
 	local creepFamily = UnitCreatureFamily(unit);
 	local creepType = UnitClassification(unit);
-	local abilitiesLine;
+	local guid = UnitGUID(unit) or ""
+	local creepId = tonumber(guid:match("-(%d+)-%x+$"), 10)
 
 	local unlocalizedCreepName = GFWTable.KeyOf(FHH_Localized, creepName);
 	if (unlocalizedCreepName) then
 		creepName = unlocalizedCreepName;
 	end
-	
-	-- if this beast is in our database, make sure we have the right level range & type info
-	FHH_CheckBeastLevel(creepName, creepLevel, creepType);
-
-	-- if this is a Beast Lore tooltip, parse out and use its tamed abilities info
-	if (FHH_TAMED_ABILS_PATTERN == nil) then
-		FHH_TAMED_ABILS_PATTERN = GFWUtils.FormatToPattern(PET_SPELLS_TEMPLATE);
-	end
-	for lineNum = 1, GameTooltip:NumLines() do
-		local lineText = getglobal("GameTooltipTextLeft"..lineNum):GetText();
-		if (lineText) then 
-			if (string.find(lineText, LIGHTYELLOW_FONT_COLOR_CODE)) then
-				return; -- if we've already added a line to this tooltip, we should stop.
-			end
-			local _, _, beastLoreInfo = string.find(lineText, FHH_TAMED_ABILS_PATTERN);
-			if (beastLoreInfo) then
-				abilitiesLine = lineNum;
-				local beastLoreList = {strsplit(",", beastLoreInfo)};
-				local beastSpellTable = {};
-				for _, niceSpellName in pairs(beastLoreList) do
-					if (niceSpellName ~= "") then
-						local _, _, spellName, rankNum = string.find(niceSpellName, "^(.+) %(.+ (%d+)%)$");
-						if (spellName == nil or spellName == "" or tonumber(rankNum) == nil) then
-							GFWUtils.PrintOnce(GFWUtils.Red("Hunter's Helper Error: ").."Can't parse spell "..GFWUtils.Hilite(niceSpellName).." from "..GFWUtils.Hilite(creepName)..".");
-						else
-							spellName = string.gsub(spellName, "^%s+", ""); -- strip leading spaces
-							spellName = string.gsub(spellName, "%s+$", ""); -- and trailing spaces
-							local spellToken = FHH_SpellTokenforName(spellName);
-							if (FHH_NewInfo and FHH_NewInfo.SpellTokenAliases and FHH_NewInfo.SpellTokenAliases[spellToken]) then
-								spellToken = FHH_NewInfo.SpellTokenAliases[spellToken];
-							end
-							if (spellToken == nil) then
-								spellToken = FHH_RecordNewSpellToken(spellName, true);
-							end
-							if (not FHH_TrainerSpells[spellToken]) then
-								beastSpellTable[spellToken] = tonumber(rankNum);
-							end
-						end
-					end
-				end
-				FHH_CheckSpellTables(creepName, beastSpellTable, creepLevel, creepFamily);
-			end
-		end
-	end
 
 	-- look up the list of abilities we think this critter has
-	local abilitiesList;
-	if (FHH_NewInfo and FHH_NewInfo.BeastInfo and FHH_NewInfo.BeastInfo[creepName]) then
-		abilitiesList = FHH_NewInfo.BeastInfo[creepName];
-	elseif (FHH_BeastInfo[creepName]) then
-		abilitiesList = FHH_BeastInfo[creepName];
-		if (FHH_NewInfo and FHH_NewInfo.BadBeastInfo and FHH_NewInfo.BadBeastInfo[creepName]) then
-			local newAbilitiesList = {};
-			for spellToken, rankNum in pairs(abilitiesList) do
-				if (FHH_NewInfo.BadBeastInfo[creepName][spellToken] ~= rankNum) then
-					newAbilitiesList[spellToken] = rankNum;
-				end
-			end
-			abilitiesList = newAbilitiesList;
-		end
-	end
-			
-	if (abilitiesList and GFWTable.Count(abilitiesList) > 0) then
-	
+	local abilitiesList = LibPet.petSkills(creepId)
+
+	if (abilitiesList and _G.GFWTable.Count(abilitiesList) > 0) then
 		-- build textual description from that list (with color coding if you're a hunter)
 		local coloredList = {};
 		local _, myClass = UnitClass("player");
-		for spellName, rankNum in pairs(abilitiesList) do
-			-- this table also has k/v pairs for zone, level, and type now, let's not print those
-			if (not FHH_NonSpellKeys[spellName]) then
-				if (myClass == "HUNTER" and FHH_KnownSpells and GFWTable.Count(FHH_KnownSpells) > 0) then
-					if (FHH_KnownSpells[spellName] and FHH_KnownSpells[spellName][rankNum]) then
-						table.insert(coloredList, GRAY_FONT_COLOR_CODE..FHH_SpellDescription(spellName, rankNum)..FONT_COLOR_CODE_CLOSE);
-					else
-						table.insert(coloredList, GREEN_FONT_COLOR_CODE..FHH_SpellDescription(spellName, rankNum)..FONT_COLOR_CODE_CLOSE);
-					end
+		for spellIcon, rankNum in pairs(abilitiesList) do
+			local spellId, spellName = PetSpells.getSpellFromIcon(spellIcon, rankNum)
+
+			if (myClass == "HUNTER") then
+				if (HHSpells:isSpellKnown(spellIcon, rankNum) ~= nil) then
+					table.insert(coloredList, GRAY_FONT_COLOR_CODE..FHH_SpellDescription(spellName, rankNum)..FONT_COLOR_CODE_CLOSE);
 				else
-					table.insert(coloredList, FHH_SpellDescription(spellName, rankNum));
+					table.insert(coloredList, GREEN_FONT_COLOR_CODE..FHH_SpellDescription(spellName, rankNum)..FONT_COLOR_CODE_CLOSE);
 				end
+			else
+				table.insert(coloredList, FHH_SpellDescription(spellName, rankNum));
 			end
 		end
 		local abilitiesText = table.concat(coloredList, ", ");
 		abilitiesText = string.gsub(abilitiesText, "( %d+)", " ("..RANK.."%1)");
-	
+
 		-- add it to the tooltip (or, if Beast Lore, replace its line with our color-coded one)
-		if (abilitiesLine) then
-			local lineText = getglobal("GameTooltipTextLeft"..abilitiesLine);
+		local lineText = tooltipIsBeastLore()
+		if (lineText) then
 			lineText:SetText(GFWUtils.LtY(string.format(PET_SPELLS_TEMPLATE, abilitiesText)));
 		else
 			GameTooltip:AddLine(GFWUtils.LtY(string.format(PET_SPELLS_TEMPLATE, abilitiesText)), 1.0, 1.0, 1.0);
@@ -587,60 +486,8 @@ function FHH_ModifyTooltip(unit)
 end
 
 function FHH_ScanCraftFrame()
-
 	if (not CraftFrame or not CraftFrame:IsVisible()) then return; end
-	local numCrafts = GetNumCrafts();
 
-	FHH_KnownSpells = {};
-	FHH_UISpellCraftIndices = {};
-	FHH_PetKnownSpellRanks = {};
-	
-	for craftIndex = 1, numCrafts do
-		local craftName, craftSubSpellName, craftType, _, _, _, requiredLevel = GetCraftInfo(craftIndex);
-		if not craftSubSpellName then
-			return
-		end
-		local _, _, rankNum = string.find(craftSubSpellName, "(%d+)");
-		if (rankNum and tonumber(rankNum)) then
-			rankNum = tonumber(rankNum);
-		end
-		local craftIconId = GetCraftIcon(craftIndex);
-		local spellToken = FHH_SpellTokenForIcon(craftIconId, craftName);
-		local nameSpellToken = FHH_SpellTokenforName(craftName);
-		if (spellToken and nameSpellToken and spellToken ~= nameSpellToken) then
-			if (FHH_NewInfo == nil) then
-				FHH_NewInfo = {};
-			end
-			if (FHH_NewInfo.SpellTokenAliases == nil) then
-				FHH_NewInfo.SpellTokenAliases = {};
-			end
-			FHH_NewInfo.SpellTokenAliases[nameSpellToken] = spellToken;
-		end
-
-		if (FHH_KnownSpells[spellToken] == nil) then
-			FHH_KnownSpells[spellToken] = {};
-		end
-		if (craftType == "used") then
-			FHH_PetKnownSpellRanks[spellToken] = 0;
-		end
-		
-		if (rankNum) then
-			if (FHH_UISpellCraftIndices[spellToken] == nil) then
-				FHH_UISpellCraftIndices[spellToken] = {};
-			end
-			FHH_KnownSpells[spellToken][rankNum] = 1;
-			FHH_UISpellCraftIndices[spellToken][rankNum] = craftIndex;
-			if (craftType == "used") then
-				FHH_PetKnownSpellRanks[spellToken] = math.max(FHH_PetKnownSpellRanks[spellToken], rankNum);
-			end
-		else
-			FHH_UISpellCraftIndices[spellToken] = craftIndex;
-		end
-		if ( requiredLevel and requiredLevel > 0 ) then
-			FHH_RecordNewRequiredLevel(spellToken, tonumber(rankNum), requiredLevel, true);
-		end
-	end
-	FHH_ProcessAliases();
 	FHH_MinimapUpdateCount();
 	if (FHH_UI and FHH_UI:IsVisible()) then
 		FHH_UIUpdateList();
@@ -695,8 +542,12 @@ end
 
 ------------------------------------------------------
 
-function FHH_Find(spellToken, rankNum)
-	local niceSpellName = FHH_NameForSpellToken(spellToken);
+function FHH_Find(spellToken, rankNum) --TODO: Rewrite this
+	if true then
+		print('find needs rewrite')
+		return
+	end
+	--local niceSpellName = FHH_NameForSpellToken(spellToken);
 	if (niceSpellName == nil and FHH_NewInfo and FHH_NewInfo.SpellTokensToNames and FHH_NewInfo.SpellTokensToNames[spellToken]) then
 		niceSpellName = FHH_NewInfo.SpellTokensToNames[spellToken];
 	end
@@ -838,36 +689,57 @@ function FHH_Find(spellToken, rankNum)
 end
 
 function FHH_CurrentZoneLearnableBeasts()
-	local zone = GetRealZoneText();
+	if _G.C_Map.GetBestMapForUnit("player") == 1415 then
+		return {}
+	end
+	local zoneId = ZoneInfo.getCurrentZoneId()
+	if zoneId == nil then
+		return {}
+	end
+
+	local pets = LibPet.zonePets(zoneId)
+	if not pets then
+		--@debug@
+		print('No pets in current zone')
+		--@end-debug@
+		return {}
+	end
 	local zoneCritters = {};
-	for beastName, info in pairs(FHH_BeastInfo) do
-		if (info.z == zone) then
-			local beastInfo = FHH_BeastInfo[beastName];
-			for spellToken, rank in pairs(beastInfo) do
-				if (not FHH_NonSpellKeys[spellToken]) then
-					if (not FHH_KnownSpells[spellToken] or (rank and not FHH_KnownSpells[spellToken][rank])) then
-						if (not GFWTable.KeyOf(zoneCritters, beastName)) then
-							table.insert(zoneCritters, beastName);
-						end
-					end
+	for petId, petInfo in pairs(pets) do
+		local spells = LibPet.petSkills(petId)
+		if spells then
+			for spellIcon, rank in pairs(spells) do
+				if not HHSpells:isSpellKnown(spellIcon, rank) then
+					table.insert(zoneCritters, petId, petInfo);
 				end
 			end
 		end
 	end
-	return zoneCritters;
+	return zoneCritters
 end
 
-function FHH_GenerateFindReport(spellToken, rankNum, maxZones)
+--/dump FHH_GenerateFindReport(1754, 1000)
+function FHH_GenerateFindReport(spellId, maxZones)
+	assert(maxZones, 'maxZones not set')
 	local reportLines = {};
-	local zoneName = GFWZones.UnlocalizedZone(GetRealZoneText());
-	local critterList = FHH_FindCreatures(spellToken, rankNum, zoneName);
-	if (#critterList > 0) then
-		table.insert(reportLines, {zone=GFWZones.LocalizedZone(zoneName), critters=critterList});
+	--local zoneName = GFWZones.UnlocalizedZone(_G.GetRealZoneText());
+	local zoneId = ZoneInfo.getCurrentZoneId()
+	print('Current zone', zoneId)
+	print('FHH_GenerateFindReport', spellId, maxZones)
+	local petList = PetSpells.getPetsWithSpell(spellId, zoneId)
+
+	if (GFWTable.Count(petList) > 0) then
+		table.insert(reportLines, {zone=_G.GetZoneText(), critters=petList});
 	end
-	
+
 	if (maxZones > 1) then
-		local zoneConnections = GFWZones.ConnectionsForZone(zoneName);	
-		if (zoneConnections == nil) then
+
+		local zoneConnections = GFWZones.ConnectionsForZone(HHZoneLocale.unlocalize(_G.GetRealZoneText()))
+		--DevTools_Dump(zoneConnections)
+		--/dump _G.LibStub('LibTouristClassic-1.0'):IterateBorderZones(_G.C_Map.GetBestMapForUnit("player"))
+		--local borders = Tourist:IterateBorderZones(_G.C_Map.GetBestMapForUnit("player"))
+		assert(zoneConnections, 'No zone connections found')
+--[[		if (zoneConnections == nil) then
 			-- player is in an unknown zone; instead of doing nothing, let's pick a known zone to start searching from.
 			local _, race = UnitRace("player");
 			if (race == "Night Elf") then
@@ -903,45 +775,42 @@ function FHH_GenerateFindReport(spellToken, rankNum, maxZones)
 				end
 			end
 			zoneConnections = GFWZones.ConnectionsForZone(zoneName);
-		end
+		end]]
 	
 		local shouldBreak;
 		for _, zones in pairs(zoneConnections) do
 			for _, zoneName in pairs(zones) do
-				critterList = FHH_FindCreatures(spellToken, rankNum, zoneName);
-				if (#critterList > 0) then
-					table.insert(reportLines, {zone=GFWZones.LocalizedZone(zoneName), critters=critterList});
-					if (#reportLines >= maxZones) then
-						shouldBreak = true;
-						break;
+				--print('zoneName', zoneName)
+				local mapId = Tourist:GetZoneMapID(zoneName)
+				--assert(mapId, 'mapId not found for zoneName '..zoneName)
+				if mapId ~=nil then
+					zoneId = ZoneInfo.getZoneId(mapId)
+					assert(zoneId, 'ZoneId not found')
+					petList = PetSpells.getPetsWithSpell(spellId, zoneId)
+					--critterList = FHH_FindCreatures(spellToken, rankNum, zoneName);
+					petList = PetSpells.getPetsWithSpell(spellId, zoneId)
+					if (_G.GFWTable.Count(petList) > 0) then
+						table.insert(reportLines, {zone=HHZoneLocale.localize(zoneName), critters=petList});
+						if (#reportLines >= maxZones) then
+							shouldBreak = true;
+							break;
+						end
+					else
+						utils:printf('No pets with spell %d in zone %s', spellId, zoneName)
 					end
 				end
 			end
 			if (shouldBreak) then break; end
 		end
 	end
-	
+
+	if _G.GFWTable.Count(petList) == 0 then
+		utils:sprintf('No pets found for spell %s', spellId)
+	end
 	return reportLines;
 end
 
-function FHH_FindCreatures(spellToken, rankNum, zone)
-	local creatures = {};
-	for name, info in pairs(FHH_BeastInfo) do
-		if (info.z == zone and ((rankNum and info[spellToken] == rankNum) or info[spellToken] == 0)) then
-			table.insert(creatures, name);
-		end
-	end
-	if (FHH_NewInfo and FHH_NewInfo.BeastInfo) then
-		for name, info in pairs(FHH_NewInfo.BeastInfo) do
-			if (info.z == zone and ((rankNum and info[spellToken] == rankNum) or info[spellToken] == 0)) then
-				table.insert(creatures, name);
-			end
-		end
-	end
-	return creatures;
-end
-
-function FHH_CreatureListString(critterList)
+function FHH_CreatureListString(critterList) --TODO: Rewrite this together with find
 	local listString = ""
 	for _, name in pairs(critterList) do
 		local info = FHH_BeastInfo[name];
@@ -1001,88 +870,8 @@ function FHH_HasTameEffect(unit)
 
 end
 
-function FHH_SpellTokenforName(spellName)
-	local token = FHH_SpellNamesToTokens[spellName];
-	if (token == nil and FHH_NewInfo and FHH_NewInfo.SpellNamesToTokens) then
-		token = FHH_NewInfo.SpellNamesToTokens[spellName];
-	end
-	return token;
-end
-
-function FHH_SpellTokenForIcon(spellIcon, spellName)
-	local spellToken;
-	for spellID, token in pairs(FHH_SpellIDsToTokens) do
-		local _, _, icon = GetSpellInfo(spellID);
-		if (icon == spellIcon) then
-			spellToken = token;
-			break;
-		end
-	end
-	if (spellToken == nil and FHH_NewInfo and FHH_NewInfo.SpellIcons) then
-		spellToken = FHH_NewInfo.SpellIcons[spellIcon];
-	end
-	if (spellToken == nil) then
-		spellToken = FHH_SpellTokenforName(spellName);
-	end	
-	if (spellToken == nil) then
-		spellToken = FHH_RecordNewSpellIcon(spellIcon, spellName);
-	end
-	return spellToken;
-end
-
-function FHH_GetCurrentPetSpells(includeTrainerSpells)
-	
-	local _, isHunterPet = HasPetUI();
-	if (not isHunterPet) then return; end
-
-	local currentPetSpells = { };
-	local i = 1;
-	local spellName, spellRank = GetSpellName(i, BOOKTYPE_PET);
-	local spellIcon = GetSpellTexture(i, BOOKTYPE_PET);
-	while spellName do
-		local _, _, rankNum = string.find(spellRank, "(%d+)");
-		local spellToken = FHH_SpellTokenForIcon(spellIcon, spellName);
-		local nameSpellToken = FHH_SpellTokenforName(spellName);
-		if (spellToken and nameSpellToken and spellToken ~= nameSpellToken) then
-			if (FHH_NewInfo == nil) then
-				FHH_NewInfo = {};
-			end
-			if (FHH_NewInfo.SpellTokenAliases == nil) then
-				FHH_NewInfo.SpellTokenAliases = {};
-			end
-			FHH_NewInfo.SpellTokenAliases[nameSpellToken] = spellToken;
-		end
-
-		if (includeTrainerSpells or not FHH_TrainerSpells[spellToken]) then
-			currentPetSpells[spellToken] = tonumber(rankNum) or 0;
-		end
-		i = i + 1;
-		spellName, spellRank = GetSpellName(i, BOOKTYPE_PET);
-		spellIcon = GetSpellTexture(i, BOOKTYPE_PET);
-	end
-	
-	return currentPetSpells;
-end
-
-function FHH_CheckPetSpells()
-	
-	local currentPetSpells = FHH_GetCurrentPetSpells();
-	if (currentPetSpells) then
-		FHH_ProcessAliases();
-		FHH_CheckSpellTables(FHH_State.TamingCritter, currentPetSpells);
-	else
-		--GFWUtils.Print("pet has no spells");
-	end
-end
-
-function FHH_SpellDescription(spellToken, rankNum, pretty)
-	local niceSpellName = FHH_NameForSpellToken(spellToken);
-	if (niceSpellName == nil and FHH_NewInfo and FHH_NewInfo.SpellTokensToNames and FHH_NewInfo.SpellTokensToNames[spellToken]) then
-		niceSpellName = FHH_NewInfo.SpellTokensToNames[spellToken];
-	end
-	if (niceSpellName == nil) then
-		niceSpellName = spellToken;
-	end
+function FHH_SpellDescription(niceSpellName, rankNum, pretty)
+	assert(niceSpellName, 'Spell name missing')
 	if (rankNum and rankNum ~= 0) then
 		if (pretty) then
 			return string.format("%s ("..RANK.." %d)", niceSpellName, rankNum);
@@ -1104,368 +893,25 @@ function FHH_SpellDescriptions(spellList)
 	return descriptions;
 end
 
-function FHH_SpellDescripionList(spellList)
-	return table.concat(FHH_SpellDescriptions(spellList), ", ");
-end
-
-function FHH_SpellIsLearnableByFamily(spellToken, family)
-	return (FHH_LearnableBy[spellToken] == FHH_ALL_FAMILIES or GFWTable.KeyOf(FHH_LearnableBy[spellToken], family));
-end
-
-function FHH_SpellHasLearnableBeasts(spellToken, spellRank)
-	
-	if (FHH_TrainerSpells[spellToken]) then
-		return;
-	end
-	
-	if (not FHH_SpellBeastCount) then
-		FHH_SpellBeastCount = {};
-		
-		for id, ranks in pairs(FHH_RequiredLevel) do
-			if (not FHH_TrainerSpells[id]) then
-				if (type(ranks) == "table") then
-					FHH_SpellBeastCount[id] = {};
-					for rank in pairs(ranks) do
-						FHH_SpellBeastCount[id][rank] = FHH_GetSpellBeastCount(id, rank);
-					end
-				else
-					FHH_SpellBeastCount[id] = FHH_GetSpellBeastCount(id);
-				end
-			end
-		end
-	end
-	
-	if (FHH_SpellBeastCount[spellToken] and FHH_SpellBeastCount[spellToken][spellRank] ~= 0) then
-		return true;
-	end
-end
-
-function FHH_GetSpellBeastCount(spellToken, spellRank)
-	local count = 0;
-	for beastName, info in pairs(FHH_BeastInfo) do
-		if (info[spellToken] == spellRank or (not spellRank and info[spellToken])) then
-			count = count + 1;
-		end
-	end
-	return count;
-end
-
-function FHH_CheckSpellTables(critter, spellList, level, family)
-	
-	if ( spellList == nil or GFWTable.Count(spellList) == 0 ) then return; end
-
-	-- process any recently learned spellToken aliases so we record data correctly.
-	local newSpellList = {};
-	local changed = false;
-	for spellToken, rankNum in pairs(spellList) do
-		if (FHH_NewInfo and FHH_NewInfo.SpellTokenAliases and FHH_NewInfo.SpellTokenAliases[spellToken]) then
-			spellToken = FHH_NewInfo.SpellTokenAliases[spellToken];
-			changed = true;
-		end
-		newSpellList[spellToken] = rankNum;
-	end
-	if (changed) then
-		spellList = newSpellList;
-	end	
-
-	if (level == nil) then
-		level = UnitLevel("pet");
-	end
-	if (family == nil) then
-		family = UnitCreatureFamily("pet");
-	end
-	
-	if ( FHH_BeastInfo[critter] ) then
-	
-		-- record any spells the critter has that our built-in table doesn't know about 
-		local unknownPetSpells = { };
-		for spellToken, rankNum in pairs(spellList) do
-			if ( FHH_BeastInfo[critter][spellToken] == nil ) then
-				unknownPetSpells[spellToken] = rankNum;
-			end
-		end
-		if ( GFWTable.Count(unknownPetSpells) > 0 ) then
-			if (FHH_NewInfo == nil) then
-				FHH_NewInfo = {};
-			end
-			if (FHH_NewInfo.BeastInfo == nil) then
-				FHH_NewInfo.BeastInfo = {};
-			end
-			FHH_NewInfo.BeastInfo[critter] = spellList; -- we want to remember the entire current spells list
-		end
-		
-		-- record any spells our built-in table thinks the critter has, but the critter actually doesn't
-		local wrongPetSpells = { };
-		for spellToken, rankNum in pairs(FHH_BeastInfo[critter]) do
-			if ( spellList[spellToken] ~= rankNum and not FHH_NonSpellKeys[spellToken]) then
-				wrongPetSpells[spellToken] = rankNum;
-			end
-		end
-		if ( GFWTable.Count(wrongPetSpells) > 0 ) then
-			if (FHH_NewInfo == nil) then
-				FHH_NewInfo = {};
-			end
-			if (FHH_NewInfo.BadBeastInfo == nil) then
-				FHH_NewInfo.BadBeastInfo = {};
-			end
-			FHH_NewInfo.BadBeastInfo[critter] = wrongPetSpells;
-		end
-		
-		if (FHH_NewInfo and (( FHH_NewInfo.BeastInfo and FHH_NewInfo.BeastInfo[critter]) or (FHH_NewInfo.BadBeastInfo and FHH_NewInfo.BadBeastInfo[critter]))) then
-			local details = "(expected "..FHH_SpellDescripionList(FHH_BeastInfo[critter]).."; found "..FHH_SpellDescripionList(spellList)..").";
-			local version = GetAddOnMetadata(ADDON_NAME, "Version");
-			GFWUtils.PrintOnce("Hunter's Helper "..version.." has incorrect data on "..GFWUtils.Hilite(critter.." "..details).." Please visit http://petopia.brashendeavors.net to submit a correction.");
-		end
-		
+function FHH_SpellHasLearnableBeasts(spellIcon, spellRank)
+	local source = PetSpells.getSkillSource(spellIcon, spellRank)
+	if (source == 'trainer') then
+		return false
+	elseif type(source) == 'table' then
+		return true
+	elseif source == nil then
+		return false
 	else
-	
-		-- this pet is entirely new to our list
-		if (FHH_NewInfo == nil) then
-			FHH_NewInfo = {};
-		end
-		if (FHH_NewInfo.BeastInfo == nil) then
-			FHH_NewInfo.BeastInfo = {};
-		end
-		FHH_NewInfo.BeastInfo[critter] = spellList;
-		FHH_CheckBeastLevel(critter, level, FHH_State.TamingType);
-		
-		local details = "(found "..FHH_SpellDescripionList(spellList).." in "..GetRealZoneText()..").";
-		local version = GetAddOnMetadata(ADDON_NAME, "Version");
-		GFWUtils.PrintOnce("Hunter's Helper "..version.." has no data on "..GFWUtils.Hilite(critter.." "..details).." Please visit http://petopia.brashendeavors.net to submit a correction.)", 60);
-
-	end
-	
-	for spellToken, rankNum in pairs(spellList) do
-		FHH_RecordNewRequiredFamily(spellToken, family);
-		FHH_RecordNewRequiredLevel(spellToken, rankNum, level);
-	end
-
-end
-
-function FHH_RecordNewRequiredFamily(spellToken, family)
-	if (FHH_LearnableBy[spellToken] and GFWTable.KeyOf(FHH_LearnableBy[spellToken], family)) then
-		return; -- we've already recorded this in our static data
-	end
-	
-	if (FHH_NewInfo == nil) then
-		FHH_NewInfo = {};
-	end
-	if (FHH_NewInfo.LearnableBy == nil) then
-		FHH_NewInfo.LearnableBy = {};
-	end
-	if (FHH_NewInfo.LearnableBy[spellToken] == nil) then
-		FHH_NewInfo.LearnableBy[spellToken] = {};
-	end
-	if (not GFWTable.KeyOf(FHH_NewInfo.LearnableBy[spellToken], family)) then
-		table.insert(FHH_NewInfo.LearnableBy[spellToken], family);
+		error('Unknown source '..source)
 	end
 end
 
-function FHH_RecordNewRequiredLevel(spellToken, rankNum, level, verified)
-	local staticData = FHH_RequiredLevel[spellToken];
-	if (staticData and (type(staticData) == "number" or staticData[rankNum])) then
-		return; -- we've already recorded this in our static data
-	end
-	
-	if (FHH_NewInfo == nil) then
-		FHH_NewInfo = {};
-	end
-	if (FHH_NewInfo.RequiredLevel == nil) then
-		FHH_NewInfo.RequiredLevel = {};
-	end
-	if (FHH_NewInfo.RequiredLevel[spellToken] == nil) then
-		FHH_NewInfo.RequiredLevel[spellToken] = {};
-	end
-	if (rankNum) then
-		if (verified) then
-			FHH_NewInfo.RequiredLevel[spellToken][rankNum] = level;
-		elseif (FHH_NewInfo.RequiredLevel[spellToken][rankNum] == nil) then
-			FHH_NewInfo.RequiredLevel[spellToken][rankNum] = tostring(level);
-		else
-			local existingRank = FHH_NewInfo.RequiredLevel[spellToken][rankNum];
-			if (type(existingRank) == "string") then
-				-- we don't have a certain answer yet, we'll use what we just got to refine it
-				FHH_NewInfo.RequiredLevel[spellToken][rankNum] = tostring(math.min(level, tonumber(existingRank)));
-			end
-		end
+function FHH_GetSpellBeastCount(spellIcon, spellRank)
+	local source = PetSpells.getSkillSource(spellIcon, spellRank)
+	if type(source) == 'table' then
+		return #PetSpells.getSkillSource(spellIcon, spellRank)
 	else
-		if (verified) then
-			FHH_NewInfo.RequiredLevel[spellToken] = level;
-		else                                  
-			FHH_NewInfo.RequiredLevel[spellToken] = tostring(level);
-		end
-	end
-			
-end
-
-function FHH_CodeForType(typeString)
-	if (typeString == "elite") then
-		return 1;
-	elseif (typeString == "rare") then
-		return 2;
-	elseif (typeString == "rareelite") then
-		return 3;
-	end
-end
-
-function FHH_TypeForCode(typeCode)
-	if (typeCode == 1) then
-		return "elite";
-	elseif (typeCode == 2) then
-		return "rare";
-	elseif (typeCode == 3) then
-		return "rareelite";
-	end
-end
-
-function FHH_CheckBeastLevel(creepName, creepLevel, creepType)
-	if (creepLevel < 1) then
-		return; -- UnitLevel sometimes returns -1 for common mobs (maybe a WDB cache thing) so we toss nonsensical values.
-	end
-
-	if (FHH_NewInfo and FHH_NewInfo.BeastLevels and FHH_NewInfo.BeastLevels[creepName]) then
-		FHH_NewInfo.BeastLevels[creepName].min = math.min(FHH_NewInfo.BeastLevels[creepName].min, creepLevel);
-		FHH_NewInfo.BeastLevels[creepName].max = math.max(FHH_NewInfo.BeastLevels[creepName].max, creepLevel);
-		if (FHH_NewInfo.BeastLevels[creepName].type and creepType ~= "normal") then
-			FHH_NewInfo.BeastLevels[creepName].type = creepType;
-		end
-	elseif (FHH_BeastInfo[creepName]) then
-		if (creepLevel < FHH_BeastInfo[creepName].min or (FHH_BeastInfo[creepName].max and creepLevel > FHH_BeastInfo[creepName].max)) then
-			if (FHH_NewInfo == nil) then
-				FHH_NewInfo = {};
-			end
-			if (FHH_NewInfo.BeastLevels == nil) then
-				FHH_NewInfo.BeastLevels = {};
-			end
-			FHH_NewInfo.BeastLevels[creepName] = {};
-			FHH_NewInfo.BeastLevels[creepName].min = math.min(FHH_BeastInfo[creepName].min, creepLevel);
-			FHH_NewInfo.BeastLevels[creepName].max = math.max(FHH_BeastInfo[creepName].max or FHH_BeastInfo[creepName].min, creepLevel);
-		end
-		if (creepType ~= "normal" and creepType ~= FHH_TypeForCode(FHH_BeastInfo[creepName].t)) then
-			if (FHH_NewInfo == nil) then
-				FHH_NewInfo = {};
-			end
-			if (FHH_NewInfo.BeastLevels == nil) then
-				FHH_NewInfo.BeastLevels = {};
-			end
-			if (FHH_NewInfo.BeastLevels[creepName] == nil) then
-				FHH_NewInfo.BeastLevels[creepName] = {};
-			end
-			FHH_NewInfo.BeastLevels[creepName].min = math.min(FHH_BeastInfo[creepName].min, creepLevel);
-			FHH_NewInfo.BeastLevels[creepName].max = math.max(FHH_BeastInfo[creepName].max or FHH_BeastInfo[creepName].min, creepLevel);
-			FHH_NewInfo.BeastLevels[creepName].t = FHH_CodeForType(creepType);
-		end
-	end
-end
-
-function FHH_RecordNewSpellToken(spellName)
-	-- we have a new spell on our hands; we'll use its lowercase name as a key for now.
-	spellToken = string.lower(spellName);
-	if (FHH_NewInfo == nil) then
-		FHH_NewInfo = {};
-	end
-	if (FHH_NewInfo.SpellNamesToTokens == nil) then
-		FHH_NewInfo.SpellNamesToTokens = {};
-	end
-	if (FHH_NewInfo.SpellTokensToNames == nil) then
-		FHH_NewInfo.SpellTokensToNames = {};
-	end
-	FHH_NewInfo.SpellNamesToTokens[spellName] = spellToken;
-	FHH_NewInfo.SpellTokensToNames[spellToken] = spellName;
-	return spellToken;
-end
-
-function FHH_RecordNewSpellIcon(spellIcon, spellName)
-	spellToken = FHH_RecordNewSpellToken(spellName);
-	if (FHH_NewInfo == nil) then
-		FHH_NewInfo = {};
-	end
-	if (FHH_NewInfo.SpellIcons == nil) then
-		FHH_NewInfo.SpellIcons = {};
-	end
-	FHH_NewInfo.SpellIcons[spellIcon] = spellToken;
-	return spellToken;
-end
-
-function FHH_ProcessAliases()
-	if (FHH_NewInfo and FHH_NewInfo.SpellTokenAliases) then
-		for oldID, newID in pairs(FHH_NewInfo.SpellTokenAliases) do
-			
-			if (FHH_NewInfo.SpellNamesToTokens) then
-				local newNamesToIDs = {};
-				local changed = false;
-				for name, id in pairs(FHH_NewInfo.SpellNamesToTokens) do
-					if (id == oldID) then
-						newNamesToIDs[name] = newID;
-						changed = true;
-					else
-						newNamesToIDs[name] = id;
-					end
-				end
-				if (changed) then
-					FHH_NewInfo.SpellNamesToTokens = newNamesToIDs;
-				end
-			end
-
-			if (FHH_NewInfo.BeastInfo) then
-				for beast, spellList in pairs(FHH_NewInfo.BeastInfo) do
-					if (spellList[oldID]) then
-						spellList[newID] = spellList[oldID];
-						spellList[oldID] = nil;
-					end
-				end
-			end
-
-			if (FHH_NewInfo.BadBeastInfo) then
-				for beast, spellList in pairs(FHH_NewInfo.BadBeastInfo) do
-					if (spellList[oldID]) then
-						spellList[newID] = spellList[oldID];
-						spellList[oldID] = nil;
-					end
-				end
-			end
-			
-			if (FHH_KnownSpells) then
-				if (FHH_KnownSpells[oldID]) then
-					FHH_KnownSpells[newID] = FHH_KnownSpells[oldID];
-					FHH_KnownSpells[oldID] = nil;
-				end
-			end
-
-			if (FHH_NewInfo.SpellTokensToNames and FHH_NewInfo.SpellTokensToNames[oldID]) then
-				FHH_NewInfo.SpellTokensToNames[newID] = FHH_NewInfo.SpellTokensToNames[oldID];
-				FHH_NewInfo.SpellTokensToNames[oldID] = nil;
-			end
-						
-			if (FHH_NewInfo.RequiredLevel and FHH_NewInfo.RequiredLevel[oldID]) then
-				FHH_NewInfo.RequiredLevel[newID] = FHH_NewInfo.RequiredLevel[oldID];
-				FHH_NewInfo.RequiredLevel[oldID] = nil;				
-			end
-
-			if (FHH_NewInfo.LearnableBy and FHH_NewInfo.LearnableBy[oldID]) then
-				FHH_NewInfo.LearnableBy[newID] = FHH_NewInfo.LearnableBy[oldID];
-				FHH_NewInfo.LearnableBy[oldID] = nil;				
-			end
-
-		end
-	end
-end
-
-function FHH_GenerateSpellNamesToTokens()
-	FHH_SpellNamesToTokens = {};
-	for id, token in pairs(FHH_SpellIDsToTokens) do
-		local name = GetSpellInfo(id);
-		if (not FHH_SpellNamesToTokens[name]) then
-			FHH_SpellNamesToTokens[name] = token;
-		end
-	end
-end
-
-function FHH_NameForSpellToken(token)
-	for spellID, spellToken in pairs(FHH_SpellIDsToTokens) do
-		if (spellToken == token) then
-			return GetSpellInfo(spellID);
-		end
+		return 0
 	end
 end
 

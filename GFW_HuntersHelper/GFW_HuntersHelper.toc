@@ -21,6 +21,8 @@
 Libs.xml
 #@end-no-lib-strip@
 
+addon\HHSpells.lua
+addon\HHZoneLocale.lua
 locale\locale_enUS.lua
 addon\options.lua
 
@@ -31,13 +33,6 @@ GFWZones.lua
 localization.lua
 localization_BeastNames.lua
 
-PetInfo.lua
-#@version-classic@
-addon\data\HuntersHelper_SpellInfo.lua
-#@end-version-classic@
-#@version-bc@
-addon\data\HuntersHelper_SpellInfo_TBC.lua
-#@end-version-bc@
 HuntersHelper.lua
 HuntersHelper.xml
 FHH_MinimapButton.xml

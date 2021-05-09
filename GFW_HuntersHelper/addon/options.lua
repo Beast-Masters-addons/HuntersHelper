@@ -1,4 +1,5 @@
 -- https://eu.battle.net/forums/en/wow/topic/3483869500#post-2
+--https://wow.gamepedia.com/WelcomeHome_-_Your_first_Ace3_Addon
 
 local addonName = "GFW_HuntersHelper"
 local titleText = GetAddOnMetadata(addonName, "Title");
@@ -110,7 +111,7 @@ local options = {
 	}
 }
 
-function HunterPetHelper:OnInitialize()
+function HunterPetHelper:OnInitialize() --TODO: Change namespace/Do not use AceAddon?
 	self.db = LibStub("AceDB-3.0"):New("HuntersHelperSettings", defaults, "Default")
 	db = self.db.profile
 	_G['HuntersHelperDB'] = db

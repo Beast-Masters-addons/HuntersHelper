@@ -713,6 +713,15 @@
 					</Frame>
 				</ScrollChild>
 			</ScrollFrame>
+<!--			<Button name="$parentTrainButton" inherits="CraftCreateButton">-->
+<!--				<Anchors>-->
+<!--					<Anchor point="CENTER" relativeTo="$parent" relativePoint="TOPLEFT">-->
+<!--						<Offset>-->
+<!--							<AbsDimension x="305" y="-400"/>-->
+<!--						</Offset>-->
+<!--					</Anchor>-->
+<!--				</Anchors>-->
+<!--			</Button>-->
 			<Button name="$parentOptionsButton" inherits="UIPanelButtonTemplate" text="FHH_UI_OPTIONS">
 				<Size>
 					<AbsDimension x="80" y="22"/>

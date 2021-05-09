@@ -1,7 +1,16 @@
 ------------------------------------------------------
 -- HuntersHelperUI.lua
--- $Id: HuntersHelperUI.lua 658 2008-06-21 00:56:15Z rick $
+-- $Id: HuntersHelperUI.lua @project-revision@ @project-date-iso@
 ------------------------------------------------------
+
+local PetSpells = _G['PetSpells']
+local HHSpells = _G['HHSpells']
+local CurrentPet = _G['CurrentPet']
+local utils = _G['BMUtils']
+utils = _G.LibStub('BM-utils-1', 5)
+local LibPet = _G['LibPet']
+local HHZoneLocale = _G['HHZoneLocale']
+local ZoneInfo = _G['ZoneInfo']
 
 FHH_UI_MAX_LIST_DISPLAYED = 7;
 FHH_UI_LIST_HEIGHT = 16;
@@ -36,9 +45,17 @@ end
 
 function FHH_UIOnShow()
 	FHH_UIFilterFamily = UnitCreatureFamily("pet");
+	if not FHH_UIFilterFamily then
+		print('No active pet')
+		return
+	end
+
+	local petFamilyInfo = CurrentPet.info()
+	FHH_UIFilterFamily = petFamilyInfo['id']
+
 	UIDropDownMenu_Initialize(FHH_UIFamilyDropDown, FHH_UIFamilyDropDown_Initialize);
 	UIDropDownMenu_SetSelectedValue(FHH_UIFamilyDropDown, FHH_UIFilterFamily or FHH_UI_ALL_FAMILIES);
-
+	HHSpells:scanCraftFrame()
 	FHH_UIUpdateList();
 	FHH_UIUpdateDisplayList();
 	FHH_UISetSelection(FHH_UIListSelectionIndex, FHH_UISelectedRank);
@@ -103,94 +120,73 @@ function FHH_UIUpdateList()
 	FHH_UIListItems = {};
 
 	if (FHH_UIViewByZone) then
-		local currentZone = GFWZones.UnlocalizedZone(GetRealZoneText());
-		local zoneConnections = GFWZones.ConnectionsForZone(currentZone);
+		local currentZone = _G.GetRealZoneText()
+		local zoneConnections = GFWZones.ConnectionsForZone(HHZoneLocale.unlocalize(currentZone))
 		local zoneList = {currentZone};
 		for stepsAway, zones in pairs(zoneConnections) do
 			for _, zone in pairs(zones) do
 				table.insert(zoneList, zone);
 			end
 		end
-		for _, zone in pairs(zoneList) do
-			local zoneCritters = {};
-			for beastName, info in pairs(FHH_BeastInfo) do
-				if (not FHH_UIFilterName or string.find(string.lower(zone), FHH_UIFilterName) or string.find(string.lower(beastName), FHH_UIFilterName)) then
-					if (not FHH_UIFilterFamily or FHH_UIFilterFamily == info.f) then
-						if (info.z == zone) then
-							table.insert(zoneCritters, beastName);
-						end
-					end
-				end
+		for key, zone in pairs(zoneList) do
+			local zoneId, zoneName
+			if key == 1 then
+				zoneId = ZoneInfo.getCurrentZoneId()
+				zoneName = zone --Current zone is already localized
+			else
+				zoneId = ZoneInfo.getZoneIdByName(zone)
+				zoneName = HHZoneLocale.localize(zone)
 			end
-			if (#zoneCritters > 0) then
+
+			local zonePets = {}
+			if zoneId ~= nil then
+				zonePets = LibPet.zonePets(zoneId)
+			end
+
+			if (zonePets ~= {}) then
 				local listItem = {};
 
-				listItem.name = zone;
+				--Zone name header
+				listItem.name = zoneName
 				listItem.header = 1;
 				listItem.expanded = not FHH_UICollapsedHeaders[listItem.name];
-				table.insert(FHH_UIListItems, listItem);
 
-				for _, beastName in pairs(zoneCritters) do
-					listItem = {};
-					listItem.name = beastName;
+				if zonePets ~= nil then
+					table.insert(FHH_UIListItems, listItem);
+					for petId, petInfo in pairs(zonePets) do
+						listItem = {};
+						listItem.name = petInfo['name'];
+						listItem.petInfo = petInfo
+						listItem.petSpells = LibPet.petSkills(petId)
 
-					-- start by assuming every critter has known spells, then check each spell...
-					listItem.status = "used";
-					local beastInfo = FHH_BeastInfo[beastName];
-					for spellToken, rank in pairs(beastInfo) do
-						if (not FHH_NonSpellKeys[spellToken]) then
-							if (not FHH_KnownSpells[spellToken] or (rank and not FHH_KnownSpells[spellToken][rank])) then
-								-- and mark it available if we have that rank
-								listItem.status = "available";
-							else
-								-- or unavailable if we're too low level for that rank
-								local requiredLevel = FHH_RequiredLevel[spellToken];
-								if (type(requiredLevel) == "table" and requiredLevel[rank] > UnitLevel("player")) then
-									listItem.status = "unavailable";
-								elseif (type(requiredLevel) == "number" and requiredLevel > UnitLevel("player")) then
-									listItem.status = "unavailable";
+						-- start by assuming every critter has known spells, then check each spell...
+						-- Check pet spells to determine if the pet has available spells
+						listItem.status = "used";
+						if listItem.petSpells ~= nil then
+							for spellIcon, rank in pairs(listItem.petSpells) do
+								if (not HHSpells:isSpellKnown(spellIcon, rank)) then
+									-- and mark it available if we have that rank
+									listItem.status = "available";
+								else
+									local spell = PetSpells.getSpellPropertiesByIcon(spellIcon, rank)
+									-- or unavailable if we're too low level for that rank
+									if (spell['level'] > _G.UnitLevel("player")) then
+										listItem.status = "unavailable";
+									end
 								end
 							end
-						end
-					end
 
-					if (not FHH_UIFilterKnownSkills[listItem.status]) then
-						table.insert(FHH_UIListItems, listItem);
+							if (listItem.petSpells ~= {} and not FHH_UIFilterKnownSkills[listItem.status]) then
+								table.insert(FHH_UIListItems, listItem);
+							end
+						end
 					end
 				end
 			end
 		end
 	else
-		local listItem = {};
-
-		listItem.name = FHH_ACTIVE_ABILITIES;
-		listItem.header = 1;
-		listItem.expanded = not FHH_UICollapsedHeaders[listItem.name];
-		table.insert(FHH_UIListItems, listItem);
-
-		for spellName, spellToken in GFWTable.PairsByKeys(FHH_SpellNamesToTokens) do
-			if (not FHH_PassiveSpells[spellToken]) then
-				listItem = FHH_GenerateListItem(spellName, spellToken);
-				if (listItem) then
-					table.insert(FHH_UIListItems, listItem);
-				end
-			end
-		end
-
-		listItem = {};
-		listItem.name = FHH_PASSIVE_ABILITIES;
-		listItem.header = 1;
-		listItem.expanded = not FHH_UICollapsedHeaders[listItem.name];
-		table.insert(FHH_UIListItems, listItem);
-
-		for spellName, spellToken in GFWTable.PairsByKeys(FHH_SpellNamesToTokens) do
-			if (FHH_PassiveSpells[spellToken]) then
-				listItem = FHH_GenerateListItem(spellName, spellToken);
-				if (listItem) then
-					table.insert(FHH_UIListItems, listItem);
-				end
-			end
-		end
+		HHSpells:buildSpellList(false)
+		HHSpells:buildSpellList(true)
 	end
 end
 
@@ -210,94 +206,74 @@ local function statusSort(a,b)
 	return aPriority < bPriority;
 end
 
-function FHH_GenerateListItem(spellName, spellToken)
-	if (not FHH_UIFilterFamily or FHH_LearnableBy[spellToken] == FHH_ALL_FAMILIES or GFWTable.KeyOf(FHH_LearnableBy[spellToken], FHH_UIFilterFamily)) then
-		if (not FHH_UIFilterName or string.find(string.lower(spellName), FHH_UIFilterName)) then
-			listItem = {};
-			listItem.name = spellName;
-			listItem.id = spellToken;
-
-			local requiredLevel = FHH_RequiredLevel[spellToken];
-			if (type(requiredLevel) == "table") then
-				listItem.status = FHH_UISpellStatus(spellToken);
-			else
-				listItem.status = FHH_UISpellAndRankStatus(spellToken, 0);
-			end
-
-			if (not FHH_UIFilterKnownSkills[listItem.status]) then
-				return listItem;
-			end
+local function valueInTable(table, value)
+	assert(type(table) == 'table', 'Bad argument #1 to valueInTable (table expected)')
+	for _, value_check in pairs(table) do
+		if value == value_check then
+			return true
 		end
+	end
+	return false
+end
+
+---Generate spell list item
+---@param spellName string
+---@param spellIcon string
+function FHH_GenerateListItem(spellName, spellIcon)
+	--Show only spells learnable by the given family
+	if _G.FHH_UIFilterFamily and not PetSpells.learnableByFamily(spellIcon, _G.FHH_UIFilterFamily) then
+		return
+	end
+
+	--Filter by spell name
+	if FHH_UIFilterName and string.find(string.lower(spellName), FHH_UIFilterName) == nil then
+		return
+	end
+
+	local listItem = {};
+	listItem.name = spellName
+	listItem.id = spellIcon
+	listItem.status = FHH_UISpellStatus(spellIcon)
+
+	if (not FHH_UIFilterKnownSkills[listItem.status]) then
+		return listItem;
 	end
 end
 
-function FHH_UISpellStatus(spellToken)
+function FHH_UISpellStatus(spellIcon)
 	-- check statuses of each rank, use priority sort to determine status for the overall spell line-item
 	local statuses = {};
-	for rank in pairs(FHH_RequiredLevel[spellToken]) do
-		table.insert(statuses, FHH_UISpellAndRankStatus(spellToken, rank));
+	for rank in pairs(_G['PetSpellRanks'][spellIcon]) do
+		table.insert(statuses, FHH_UISpellAndRankStatus(spellIcon, rank));
 	end
 	--DevTools_Dump({[spellToken]=statuses});
 	table.sort(statuses, statusSort);
 	return statuses[1];
 end
 
-function FHH_UISpellAndRankStatus(spellToken, rank)
-	local requiredLevel = FHH_RequiredLevel[spellToken];
+function FHH_UISpellAndRankStatus(spellIcon, rank)
+	local spell = PetSpells.getSpellPropertiesByIcon(spellIcon, rank)
 	local petKnownRank;
-	if (FHH_PetKnownSpellRanks) then
-		petKnownRank = FHH_PetKnownSpellRanks[spellToken];
-	end
-	local petLevel = UnitLevel("pet");
-	local petFamily = UnitCreatureFamily("pet");
+	petKnownRank = HHSpells:getHighestKnownRank(spellIcon)
 
-	if (FHH_KnownSpells[spellToken]) then
+	local petLevel = _G.UnitLevel("pet")
+	if not petLevel then
+		return
+	end
+	local petFamilyInfo = LibPet.getFamilyInfoFromTexture(_G.GetPetIcon())
+
+	if (HHSpells:isSpellKnown(spellIcon)) then
 		-- hunter knows the spell in general, test rank
-		if (type(requiredLevel) == "table") then
-			if (FHH_KnownSpells[spellToken][rank]) then
-				-- hunter knows this rank, check pet
-				if (UnitExists("pet") and FHH_ReplacingCraftFrame) then
-					if (petKnownRank and (rank <= petKnownRank)) then
-						return "trained";
-					else
-						if (not FHH_SpellIsLearnableByFamily(spellToken, petFamily)) then
-							-- pet can't learn any rank of this spell
-							return "nevertrain";
-						elseif (requiredLevel[rank] > petLevel) then
-							return "untrainable";
-						else
-							return "trainable";
-						end
-					end
-				else
-					return "used";
-				end
-			else
-				-- hunter doesn't know this rank
-				if (UnitExists("pet") and petKnownRank == rank) then
-					return "learning";
-				else
-					if (requiredLevel[rank] > UnitLevel("player") ) then
-						return "unavailable";
-					elseif (not FHH_SpellHasLearnableBeasts(spellToken, i)) then
-						-- this spell can't be learned because no beasts have it
-						-- TODO: should we distinguish this status from cant-learn-it-yet?
-						return "unavailable";
-					else
-						return "available";
-					end
-				end
-			end
-		else
-			-- hunter knows the only rank, check pet
-			if (UnitExists("pet") and FHH_ReplacingCraftFrame) then
-				if (petKnownRank) then
+		if (HHSpells:isSpellKnown(spellIcon, rank)) then
+			-- hunter knows this rank, check pet
+			if (_G.UnitExists("pet") and _G.FHH_ReplacingCraftFrame) then
+				if (petKnownRank and (rank <= petKnownRank)) then
 					return "trained";
 				else
-					if (not FHH_SpellIsLearnableByFamily(spellToken, petFamily)) then
+					if (not PetSpells.learnableByFamily(spellIcon, petFamilyInfo['id'])) then
 						-- pet can't learn any rank of this spell
 						return "nevertrain";
-					elseif (requiredLevel > petLevel) then
+					elseif (spell['level'] > petLevel) then
 						return "untrainable";
 					else
 						return "trainable";
@@ -306,24 +282,31 @@ function FHH_UISpellAndRankStatus(spellToken, rank)
 			else
 				return "used";
 			end
+		else
+			-- hunter doesn't know this rank
+			if (_G.UnitExists("pet") and petKnownRank == rank) then
+				return "learning";
+			else
+				if (spell['level'] > UnitLevel("player") ) then
+					return "unavailable";
+				elseif (not FHH_SpellHasLearnableBeasts(spellIcon, rank)) then
+					-- this spell can't be learned because no beasts have it
+					-- TODO: should we distinguish this status from cant-learn-it-yet?
+					return "unavailable";
+				else
+					return "available";
+				end
+			end
 		end
 	else
 		-- hunter doesn't know any rank of this spell
 		if (UnitExists("pet") and petKnownRank == rank) then
 			return "learning";
 		else
-			if (type(requiredLevel) == "table") then
-				if (requiredLevel[rank] > UnitLevel("player") ) then
-					return "unavailable";
-				else
-					return "available";
-				end
+			if (spell['level'] > UnitLevel("player")) then
+				return "unavailable";
 			else
-				if (requiredLevel > UnitLevel("player") ) then
-					return "unavailable";
-				else
-					return "available";
-				end
+				return "available";
 			end
 		end
 	end
@@ -452,6 +435,8 @@ function FHH_UIUpdate()
 
 				listButton.status = listItem.status;
 				listButton.spell = listItem.id;
+				listButton.name = listItem.name
+
 				listButton:SetNormalTexture("");
 
 				-- Place the highlight and lock the highlight state
@@ -492,8 +477,8 @@ function FHH_UISetSelection(id, rank)
 			FHH_UIDetailHeaderLeft:SetWidth(246);
 			FHH_UIDetailDescription:SetPoint("TOPLEFT", 5, -60);
 
-			FHH_UIShowPetDetail(listItem.name);
-			FHH_UIShowPetSpells(listItem.name);
+			FHH_UIShowPetDetail(listItem);
+			FHH_UIShowPetSpells(listItem);
 			FHH_UIHideRanksBar();
 		else
 			FHH_UIDetailIcon:SetPoint("TOPLEFT", 8, -3);
@@ -501,16 +486,16 @@ function FHH_UISetSelection(id, rank)
 			FHH_UIDetailHeaderLeft:SetPoint("TOPLEFT", 0, 3);
 			FHH_UIDetailHeaderLeft:SetWidth(256);
 			FHH_UIDetailDescription:SetPoint("TOPLEFT", 5, -50);
-
-			local ranks = FHH_RequiredLevel[listItem.id];
-			if (type(ranks) == "table") then
+			local ranks = PetSpells.getSpellRanks(listItem.id)
+			if (#ranks > 1) then
 				if (not rank or rank > #ranks) then
 					local _, isHunterPet = HasPetUI();
 					if (isHunterPet) then
 						-- select highest trainable rank
-						for i, requiredLevel in pairs(ranks) do
-							if (requiredLevel <= UnitLevel("pet")) then
-								if (FHH_KnownSpells[listItem.id] and FHH_KnownSpells[listItem.id][i]) then
+						for i, spellId in ipairs(ranks) do
+							local spellInfo = PetSpells.getSpellProperties(spellId)
+							if (spellInfo['level'] <= UnitLevel("pet")) then
+								if HHSpells:isSpellKnown(listItem.id, i) then
 									rank = i;
 								end
 							else
@@ -519,9 +504,10 @@ function FHH_UISetSelection(id, rank)
 						end
 					else
 						-- select highest available rank
-						for i, requiredLevel in pairs(ranks) do
-							if (requiredLevel <= UnitLevel("player")) then
-								if (not FHH_KnownSpells[listItem.id] or not FHH_KnownSpells[listItem.id][i]) then
+						for i, spellId in ipairs(ranks) do
+							local spellInfo = PetSpells.getSpellProperties(spellId)
+							if (spellInfo['level'] <= UnitLevel("player")) then
+								if HHSpells:isSpellKnown(listItem.id, i) then
 									rank = i;
 								end
 							end
@@ -536,12 +522,10 @@ function FHH_UISetSelection(id, rank)
 					end
 					FHH_UISelectedRank = rank;
 				end
-				FHH_UIShowRanksBar(listItem.id);
+				FHH_UIShowRanksBar(listItem.id, ranks);
 			else
 				-- this spell doesn't have ranks
-				if (not rank) then
-					rank = 0;
-				end
+				rank = 1;
 				FHH_UIHideRanksBar();
 			end
 
@@ -552,25 +536,27 @@ function FHH_UISetSelection(id, rank)
 		FHH_UIDetail:Hide();
 		FHH_UIHideRanksBar();
 	end
+	--@debug@
+	--utils:printf('Set selection to id %s and rank %s', id, rank or 'nil')
+	--@end-debug@
 end
 
-function FHH_UIShowRanksBar(spellToken)
+function FHH_UIShowRanksBar(spellIcon, ranks)
 	FHH_UIDetailScrollFrame:SetHeight(168);
 	FHH_UIDetailScrollFrame:SetPoint("TOPLEFT", 20, -242);
 	FHH_UIRankLabel:Show();
 	FHH_UIHorizontalBar2Left:Show();
 	FHH_UIHorizontalBar2Right:Show();
 
-	local ranks = FHH_RequiredLevel[spellToken];
 	for i = 1, FHH_UI_NUM_RANK_BUTTONS do
 		local button = _G["FHH_UIRank"..i]
         local rankText = _G["FHH_UIRank"..i.."Text"];
 		if (ranks[i]) then
 			button:Show();
             rankText:SetText(i);
-			button.spell = spellToken;
+			button.spell = ranks[i];
 			button.rank = i;
-			button.status = FHH_UISpellAndRankStatus(spellToken, i);
+			button.status = FHH_UISpellAndRankStatus(spellIcon, i);
 			local color = FHH_UIColors[button.status];
             rankText:SetTextColor(color.r, color.g, color.b);
 
@@ -603,36 +589,36 @@ function FHH_UIHideRanksBar()
 	end
 end
 
-function FHH_UIShowSpellDetail(spellToken, rank)
+function FHH_UIShowSpellDetail(spellIcon, rank)
+	local spell = PetSpells.getSpellPropertiesByIcon(spellIcon, rank)
+	local spellCraftInfo = HHSpells:isSpellKnown(spellIcon, rank)
 	FHH_UIDetailScrollFrame:SetVerticalScroll(0);
 
-	local spellID = GFWTable.KeyOf(FHH_SpellIDsToTokens, spellToken);
-	local _, _, icon = GetSpellInfo(spellID);
-	FHH_UIDetailIcon:SetNormalTexture(icon);
+	FHH_UIDetailIcon.spell = spell['id']
+	FHH_UIDetailIcon:SetNormalTexture(spell['icon_texture']);
 	FHH_UIDetailIconDecoration:Hide();
 
-	local requiredLevel = FHH_RequiredLevel[spellToken];
-	if (type(requiredLevel) == "table") then
-		requiredLevel = requiredLevel[rank];
-	end
-	assert(requiredLevel, format("FHH_UIShowSpellDetail(%s,%s): can't find requiredLevel", spellToken or "nil", rank or "nil"));
+	local requiredLevel = spell['level']
+	assert(requiredLevel, format("FHH_UIShowSpellDetail(%s,%s): can't find requiredLevel", spellIcon or "nil", rank or "nil"));
 	if ( UnitLevel("pet") >= requiredLevel ) then
 		FHH_UIDetailRequirements:SetText(format(ITEM_REQ_SKILL, format(TRAINER_PET_LEVEL, requiredLevel)));
 	else
 		FHH_UIDetailRequirements:SetText(format(ITEM_REQ_SKILL, format(TRAINER_PET_LEVEL_RED, requiredLevel)));
 	end
 
-	local craftIndex = FHH_UICraftIndexForSpell(spellToken, rank);
-	if (craftIndex) then
-		local spellName, rankText, craftType, _, _, trainingPointCost = GetCraftInfo(craftIndex);
+	if (spellCraftInfo ~= nil) then
+		local craftType = spellCraftInfo['craftType']
+		local trainingPointCost = spellCraftInfo['trainingPointCost']
 		if (trainingPointCost > 0) then
 			local totalPoints, spent = GetPetTrainingPoints();
 			local usablePoints = totalPoints - spent;
-
-			if (FHH_PetKnownSpellRanks and FHH_PetKnownSpellRanks[spellToken] and FHH_PetKnownSpellRanks[spellToken] < rank) then
+			local petKnownRank = HHSpells:getHighestKnownRank(spellIcon)
+			if (petKnownRank > 0 and petKnownRank < rank) then
 				-- show accurate cost for upgrading to new rank of same spell
-				local knownRankCraftIndex = FHH_UICraftIndexForSpell(spellToken, FHH_PetKnownSpellRanks[spellToken]);
-				local _, _, _, _, _, alreadySpent = GetCraftInfo(knownRankCraftIndex);
+				local knownRank = HHSpells:getHighestKnownRank(spellIcon)
+				local knownRankCraftInfo = HHSpells:isSpellKnown(spellIcon, knownRank)
+
+				local _, _, _, _, _, alreadySpent = GetCraftInfo(knownRankCraftInfo['craftIndex']);
 				local effectiveCost = trainingPointCost - alreadySpent;
 
 				local baseCostText = trainingPointCost;
@@ -664,13 +650,13 @@ function FHH_UIShowSpellDetail(spellToken, rank)
 		FHH_UIDetailCost:SetText("");
 	end
 
-	if (craftIndex) then
-		FHH_UIDetailDescription:SetText(GetCraftDescription(craftIndex));
+	if (spellCraftInfo ~= nil) then
+		FHH_UIDetailDescription:SetText(GetCraftDescription(spellCraftInfo['craftIndex']));
 		FHH_UIDetailDescription:SetTextColor(HIGHLIGHT_FONT_COLOR.r, HIGHLIGHT_FONT_COLOR.g, HIGHLIGHT_FONT_COLOR.b);
-	elseif (spellToken == "growl" and (rank == 1 or rank == 2)) then
+	elseif (spellIcon == "ability_physical_taunt" and (rank == 1 or rank == 2)) then
 		FHH_UIDetailDescription:SetText(FHH_UI_GROWL_INNATE);
 		FHH_UIDetailDescription:SetTextColor(NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b);
-	elseif (FHH_TrainerSpells[spellToken]) then
+	elseif (spell['source']=='trainer') then
 		FHH_UIDetailDescription:SetText(FHH_UI_GO_LEARN_TRAINER);
 		FHH_UIDetailDescription:SetTextColor(NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b);
 	else
@@ -679,7 +665,10 @@ function FHH_UIShowSpellDetail(spellToken, rank)
 	end
 end
 
-function FHH_UIShowSpellPets(spellToken, rank)
+function FHH_UIShowSpellPets(spellIcon, rank)
+	--@debug@
+	utils:printf('Show pets for %s rank %s', spellIcon, rank)
+	--@end-debug@
 	local detailNum = 0;
 	local lastLeftDetail;
 
@@ -696,14 +685,22 @@ function FHH_UIShowSpellPets(spellToken, rank)
 
 	FHH_UIDetailNoDetailsText:Hide();
 	local reportZones = {};
-	local craftIndex = FHH_UICraftIndexForSpell(spellToken, rank);
-	if (not FHH_TrainerSpells[spellToken])then
-		if (not craftIndex or (craftIndex and FHH_Options.ShowAlreadyKnownBeasts)) then
-			reportZones = FHH_GenerateFindReport(spellToken, rank, 1000);
+	--local craftIndex = FHH_UICraftIndexForSpell(spellIcon, rank);
+	local spellInfo = PetSpells.getSpellPropertiesByIcon(spellIcon, rank)
+	local craftInfo = HHSpells:isSpellKnown(spellIcon, rank)
+	local craftIndex
+	local isSpellKnown = craftInfo ~= nil
+	if craftInfo ~= nil then
+		craftIndex = craftInfo['craftIndex']
+	end
+
+	if spellInfo['source'] ~= 'trainer' then
+		if not isSpellKnown or (isSpellKnown and _G['HuntersHelperDB'].show_known) then
+			reportZones = FHH_GenerateFindReport(spellInfo['id'], 1000);
 			if (#reportZones == 0) then
 				FHH_UIDetailNoDetailsText:SetText(FHH_UI_UNKNOWN_RANK);
 				FHH_UIDetailNoDetailsText:Show();
-			elseif (craftIndex) then
+			elseif (isSpellKnown) then
 				FHH_UIDetailNoDetailsText:SetText(FHH_UI_ALSO_FOUND_ON);
 				FHH_UIDetailNoDetailsText:Show();
 			end
@@ -726,8 +723,8 @@ function FHH_UIShowSpellPets(spellToken, rank)
 
 		for i = 1, #zoneDetails.critters, 2 do
 			-- set up left-side detail button
-			local beastName = zoneDetails.critters[i];
-			if (beastName) then
+			local petInfo = zoneDetails.critters[i]
+			if (petInfo) then
 				detailNum = detailNum + 1;
 				local detailItem = FHH_UIGetDetailItem(detailNum);
 				if (i == 1) then
@@ -735,69 +732,56 @@ function FHH_UIShowSpellPets(spellToken, rank)
 				else
 					detailItem:SetPoint("TOPLEFT", "FHH_UIDetailItem"..(detailNum-2), "BOTTOMLEFT", 0, -10);
 				end
-				FHH_UISetBeastDetail(detailItem, beastName);
+				FHH_UISetBeastDetail(detailItem, petInfo);
 				lastLeftDetail = detailItem;
 			end
 
 			-- set up right-side detail button
-			beastName = zoneDetails.critters[i+1];
-			if (beastName) then
+			petInfo = zoneDetails.critters[i+1];
+			if (petInfo) then
 				detailNum = detailNum + 1;
 				local detailItem = FHH_UIGetDetailItem(detailNum);
 				detailItem:SetPoint("LEFT", "FHH_UIDetailItem"..(detailNum-1), "RIGHT", 10, 0);
-				FHH_UISetBeastDetail(detailItem, beastName);
+				FHH_UISetBeastDetail(detailItem, petInfo);
 			end
 		end
 	end
 end
 
-function FHH_UIShowPetDetail(name)
+function FHH_UIShowPetDetail(listItem)
+	local petInfo = listItem.petInfo
+	local familyInfo = LibPet.familyInfo(petInfo['family'])
+	print('Show pet details', petInfo['name'])
 	FHH_UIDetailScrollFrame:SetVerticalScroll(0);
 
-	local info = FHH_BeastInfo[name];
+	--local info = FHH_BeastInfo[petInfo['name']];
 
-	local icon = FHH_PetIcons[info.f];
-	if (icon) then
-		FHH_UIDetailIcon:SetNormalTexture("Interface\\Icons\\"..icon);
+	if (familyInfo and familyInfo['icon_texture']) then
+		FHH_UIDetailIcon:SetNormalTexture(familyInfo['icon_texture']);
 	end
 
-	local levelString = LEVEL.." ";
-	if (info.min > UnitLevel("player")) then
-		levelString = levelString..RED_FONT_COLOR_CODE..info.min..FONT_COLOR_CODE_CLOSE;
-	else
-		levelString = levelString..info.min;
+	if petInfo['minlevel'] ~= nil then
+		local levelString = _G.LEVEL.." "..LibPet.levelRange(petInfo['minlevel'], petInfo['maxlevel'], _G.UnitLevel("player"));
+		FHH_UIDetailRequirements:SetText(levelString)
 	end
-	if (info.max) then
-		if (info.max > UnitLevel("player")) then
-			levelString = levelString.."-"..RED_FONT_COLOR_CODE..info.max..FONT_COLOR_CODE_CLOSE;
-		else
-			levelString = levelString.."-"..info.max;
-		end
-	end
-	FHH_UIDetailRequirements:SetText(levelString);
 
-	if (info.t == nil) then
+	if (petInfo['classification'] == 0) then
 		FHH_UIDetailIconDecoration:Hide();
 		FHH_UIDetailCost:SetText("");
-	elseif (info.t == 1) then	-- Elite
-		FHH_UIDetailIconDecoration:SetTexture("Interface\\DialogFrame\\UI-DialogBox-Gold-Dragon");
+	else
+		local texture = LibPet.getClassificationDecoration(petInfo['classification'])
+		local text = LibPet.getClassificationString(petInfo['classification'])
+		FHH_UIDetailIconDecoration:SetTexture(texture);
 		FHH_UIDetailIconDecoration:Show();
-		FHH_UIDetailCost:SetText(ELITE);
-	elseif (info.t == 2) then	-- Rare
-		FHH_UIDetailIconDecoration:SetTexture("Interface\\AddOns\\GFW_HuntersHelperUI\\Rare");
-		FHH_UIDetailIconDecoration:Show();
-		FHH_UIDetailCost:SetText(FHH_UI_RARE_MOB);
-	elseif (info.t == 3) then	-- Rare Elite
-		FHH_UIDetailIconDecoration:SetTexture("Interface\\AddOns\\GFW_HuntersHelperUI\\Rare-Elite");
-		FHH_UIDetailIconDecoration:Show();
-		FHH_UIDetailCost:SetText(FHH_UI_RARE_ELITE_MOB);
+		FHH_UIDetailCost:SetText(text);
 	end
 
-	FHH_UIDetailDescription:SetText(string.format(PET_DIET_TEMPLATE, table.concat(FHH_PetDiets[info.f], ", ")));
+	local diet = LibPet.getDietStrings(familyInfo['id'])
+	FHH_UIDetailDescription:SetText(string.format(PET_DIET_TEMPLATE, table.concat(diet, ", ")));
 end
 
-function FHH_UIShowPetSpells(name)
-	local info = FHH_BeastInfo[name];
+function FHH_UIShowPetSpells(listItem)
+	local petInfo = listItem.petInfo
 	local detailNum = 0;
 
 	for i = 1, FHH_NumZoneHeaders do
@@ -812,10 +796,14 @@ function FHH_UIShowPetSpells(name)
 		button:ClearAllPoints();
 	end
 
-	for spellToken, rank in pairs(info) do
-		if (not FHH_NonSpellKeys[spellToken]) then
+	for spellIcon, rank in pairs(listItem.petSpells) do
+		local spellInfo = PetSpells.getSpellPropertiesByIcon(spellIcon, rank)
+		if spellInfo ~= nil then
+
 			detailNum = detailNum + 1;
 			local detailItem = FHH_UIGetDetailItem(detailNum);
+			detailItem.spellInfo = spellInfo
+
 			if (detailNum == 1) then
 				detailItem:SetPoint("TOPLEFT", FHH_UIDetailDescription, "BOTTOMLEFT", 10, -10);
 			elseif (detailNum % 2 == 0) then
@@ -826,11 +814,11 @@ function FHH_UIShowPetSpells(name)
 
 			local buttonName = detailItem:GetName();
 			local nameText = getglobal(buttonName.."Name");
-			nameText:SetText(FHH_SpellDescription(spellToken, rank, true));
-			if (FHH_KnownSpells[spellToken] and (rank == nil or FHH_KnownSpells[spellToken][rank])) then
+			nameText:SetText(FHH_SpellDescription(spellInfo['name'], rank, true));
+			if (HHSpells:isSpellKnown(spellIcon, rank)) then
 				nameText:SetTextColor(GRAY_FONT_COLOR.r, GRAY_FONT_COLOR.g, GRAY_FONT_COLOR.b);
 			else
-				local requiredLevel = FHH_RequiredLevel[spellToken];
+				local requiredLevel = spellInfo['level']
 				if (type(requiredLevel) == "table" and requiredLevel[rank] > UnitLevel("player")) then
 					nameText:SetTextColor(0.9, 0, 0);
 				elseif (type(requiredLevel) == "number" and requiredLevel > UnitLevel("player")) then
@@ -840,14 +828,15 @@ function FHH_UIShowPetSpells(name)
 				end
 			end
 
-			local spellID = GFWTable.KeyOf(FHH_SpellIDsToTokens, spellToken);
-			local _, _, icon = GetSpellInfo(spellID);
-			SetItemButtonTexture(detailItem, icon);
+			--local spellID = GFWTable.KeyOf(FHH_SpellIDsToTokens, spellToken);
+			--local _, _, icon = GetSpellInfo(spellInfo['id']);
+			SetItemButtonTexture(detailItem, spellInfo['icon_texture']);
 
 			local levelText = getglobal(buttonName.."Count");
 			levelText:SetText("");
 
-			detailItem.spellToken = spellToken;
+			detailItem.spellIcon = spellIcon
+			detailItem.spellInfo = spellInfo
 			detailItem.rank = rank;
 			detailItem:Show();
 		end
@@ -874,68 +863,57 @@ function FHH_UIGetDetailItem(id)
 	return button;
 end
 
-function FHH_UISetBeastDetail(button, name)
-	local info = FHH_BeastInfo[name];
-	if (info) then
+function FHH_UISetBeastDetail(button, petInfo)
+	if (petInfo) then
 		local buttonName = button:GetName();
 		local nameText = getglobal(buttonName.."Name");
-		nameText:SetText(FHH_Localized[name] or name);
+		nameText:SetText(FHH_Localized[petInfo['name']] or petInfo['name']);
 		nameText:SetTextColor(HIGHLIGHT_FONT_COLOR.r, HIGHLIGHT_FONT_COLOR.g, HIGHLIGHT_FONT_COLOR.b);
-
-		local levelString;
-		if (info.min > UnitLevel("player")) then
-			levelString = RED_FONT_COLOR_CODE..info.min..FONT_COLOR_CODE_CLOSE;
+		if petInfo['minlevel'] ~= nil then
+			local levelString = LibPet.levelRange(petInfo['minlevel'], petInfo['maxlevel'], _G.UnitLevel("player"))
+			local levelText = getglobal(buttonName.."Count");
+			levelText:SetText(levelString);
+			button.levelString = levelString
 		else
-			levelString = info.min;
+			print('minlevel not set for '..petInfo['name'])
+			button.levelString = nil
 		end
-		if (info.max) then
-			if (info.max > UnitLevel("player")) then
-				levelString = levelString.."-"..RED_FONT_COLOR_CODE..info.max..FONT_COLOR_CODE_CLOSE;
-			else
-				levelString = levelString.."-"..info.max;
-			end
-		end
-		local levelText = getglobal(buttonName.."Count");
-		levelText:SetText(levelString);
 
-		local icon = FHH_PetIcons[info.f];
+		local icon = LibPet.familyInfo(petInfo['family'])['icon_texture']
 		if (not icon) then
 			--DevTools_Dump({"missing family?",[name]=info})
 			icon = "QuestionMark";
 		end
-		SetItemButtonTexture(button, "Interface\\Icons\\"..icon);
+		SetItemButtonTexture(button, icon);
 
 		local decoration = getglobal(buttonName.."Decoration");
-		if (info.t == nil) then
+		if petInfo['classification'] ~= nil then
+			local texture = LibPet.getClassificationDecoration(petInfo['classification'])
+			decoration:SetTexture(texture)
+			decoration:Show()
+		else
 			decoration:Hide();
-		elseif (info.t == 1) then	-- Elite
-			decoration:SetTexture("Interface\\DialogFrame\\UI-DialogBox-Gold-Dragon");
-			decoration:Show();
-		elseif (info.t == 2) then	-- Rare
-			decoration:SetTexture("Interface\\AddOns\\GFW_HuntersHelperUI\\Rare");
-			decoration:Show();
-		elseif (info.t == 3) then	-- Rare Elite
-			decoration:SetTexture("Interface\\AddOns\\GFW_HuntersHelperUI\\Rare-Elite");
-			decoration:Show();
 		end
 
-		button.beastName = name;
+		button.beastName = petInfo['name'];
+		button.petInfo = petInfo
 		button:Show();
 	else
-		error("missing beast info for "..(name or "'nil'"), 2);
+		error("missing beast info for "..(petInfo['name'] or "'nil'"), 2);
 	end
 end
 
 -- list/rank buttons
 
 function FHH_UIListButton_OnEnter(self)
-	if (not FHH_Options.NoUITooltip and self.spell) then
+	if _G['HuntersHelperDB']['show_gui_tooltip'] and self.name then
 		GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
-		GameTooltip:SetText(FHH_SpellDescription(self.spell),
+		GameTooltip:SetText(self.name,
 			HIGHLIGHT_FONT_COLOR.r, HIGHLIGHT_FONT_COLOR.g, HIGHLIGHT_FONT_COLOR.b);
 
 		if (self.status == "available") then
-			if (FHH_TrainerSpells[self.spell]) then
+			local spellSource = PetSpells.getSkillSource(self.id)
+			if (spellSource == 'trainer') then
 				GameTooltip:AddLine(FHH_UI_AVAILABLE_TRAINER);
 			else
 				GameTooltip:AddLine(FHH_UI_AVAILABLE_TAME);
@@ -974,14 +952,18 @@ function FHH_UIListButton_OnClick(self, _)
 end
 
 function FHH_UIRankButton_OnEnter(self)
-	if (not FHH_Options.NoUITooltip) then
+	assert(self.spell, 'Spell is not set on button')
+	if (_G['HuntersHelperDB'].show_gui_tooltips) then
 		GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
-		GameTooltip:AddDoubleLine(FHH_SpellDescription(self.spell), RANK.." "..self.rank,
+
+		local spellName = _G.GetSpellInfo(self.spell)
+		FHH_SpellDescription(self.spell)
+		GameTooltip:AddDoubleLine(spellName, RANK.." "..self.rank,
 			HIGHLIGHT_FONT_COLOR.r, HIGHLIGHT_FONT_COLOR.g, HIGHLIGHT_FONT_COLOR.b,
 			GRAY_FONT_COLOR.r, GRAY_FONT_COLOR.g, GRAY_FONT_COLOR.b);
 
 		if (self.status == "available") then
-			if (FHH_TrainerSpells[self.spell]) then
+			if (PetSpells.getSkillSource(self.spell) == 'trainer') then
 				GameTooltip:AddLine(FHH_UI_AVAILABLE_TRAINER);
 			else
 				GameTooltip:AddLine(FHH_UI_AVAILABLE_TAME);
@@ -1199,11 +1181,11 @@ function FHH_UIFamilyDropDown_Initialize()
 	info.checked = (FHH_UIFilterFamily == nil);
 	UIDropDownMenu_AddButton(info);
 
-	for _, family in ipairs(FHH_AllFamilies) do
+	for id, family in pairs(LibPet.getFamilyNames()) do
 		info.text = family;
-		info.value = family;
+		info.value = id
 		info.func = FHH_UIFamilyDropDown_OnClick;
-		info.checked = (FHH_UIFilterFamily == family);
+		info.checked = (FHH_UIFilterFamily == id);
 		UIDropDownMenu_AddButton(info);
 	end
 end
@@ -1230,6 +1212,7 @@ function FHH_UIDetailIcon_OnEnter(self)
 	-- likewise for spells we don't know
 	if (not FHH_UIViewByZone) then
 		GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
+		GameTooltip:SetSpellByID(self.spell)
 
 		local listItem = FHH_UIDisplayList[FHH_UIListSelectionIndex];
 		local craftIndex = FHH_UICraftIndexForSpell(listItem.id, FHH_UISelectedRank);
@@ -1241,31 +1224,25 @@ function FHH_UIDetailIcon_OnEnter(self)
 end
 
 function FHH_UIDetailItem_OnEnter(self)
-
 	GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
 	if (FHH_UIViewByZone) then
 		-- detail items are spells
+		--Properties set in FHH_UIShowPetSpells
+		local spellCraftInfo = HHSpells:isSpellKnown(self.spellIcon, self.rank)
 
-		local craftIndex = FHH_UICraftIndexForSpell(self.spellToken, self.rank);
-		if (craftIndex) then
-			GameTooltip:SetCraftSpell(craftIndex);
+		if (spellCraftInfo ~= nil) then
+			GameTooltip:SetCraftSpell(spellCraftInfo['craftIndex']);
 		else
 			local rankText = "";
 			if (self.rank) then
-				rankText = RANK.." "..self.rank;
+				rankText = _G.RANK.." "..self.rank;
 			end
-			GameTooltip:AddDoubleLine(FHH_SpellDescription(self.spellToken), rankText,
+			GameTooltip:AddDoubleLine(self.spellInfo['name'], rankText,
 				HIGHLIGHT_FONT_COLOR.r, HIGHLIGHT_FONT_COLOR.g, HIGHLIGHT_FONT_COLOR.b,
 				GRAY_FONT_COLOR.r, GRAY_FONT_COLOR.g, GRAY_FONT_COLOR.b);
 		end
 
-		local requiredLevel = FHH_RequiredLevel[self.spellToken];
-		if (type(requiredLevel) == "table") then
-			requiredLevel = requiredLevel[self.rank];
-		end
-		if not requiredLevel then
-			print('Unable to find required level for rank '.. self.rank .. ' spell ' .. self.spellToken)
-		end
+		local requiredLevel = self.spellInfo['level']
 		if ( UnitLevel("pet") >= requiredLevel ) then
 			GameTooltip:AddLine(format(ITEM_REQ_SKILL, format(TRAINER_PET_LEVEL, requiredLevel)),
 				HIGHLIGHT_FONT_COLOR.r, HIGHLIGHT_FONT_COLOR.g, HIGHLIGHT_FONT_COLOR.b, true);
@@ -1279,36 +1256,19 @@ function FHH_UIDetailItem_OnEnter(self)
 		GameTooltip:SetText(FHH_Localized[self.beastName] or self.beastName,
 			HIGHLIGHT_FONT_COLOR.r, HIGHLIGHT_FONT_COLOR.g, HIGHLIGHT_FONT_COLOR.b);
 
-		local info = FHH_BeastInfo[self.beastName];
-		local levelString;
-		if (info.min > UnitLevel("player")) then
-			levelString = RED_FONT_COLOR_CODE..info.min..FONT_COLOR_CODE_CLOSE;
-		else
-			levelString = info.min;
-		end
-		if (info.max) then
-			if (info.max > UnitLevel("player")) then
-				levelString = levelString.."-"..RED_FONT_COLOR_CODE..info.max..FONT_COLOR_CODE_CLOSE;
-			else
-				levelString = levelString.."-"..info.max;
-			end
-		end
-		local typeString;
-		if (info.t == 1) then	-- Elite
-			typeString = ELITE;
-		elseif (info.t == 2) then	-- Rare
-			typeString = FHH_UI_RARE_MOB;
-		elseif (info.t == 3) then	-- Rare Elite
-			typeString = FHH_UI_RARE_ELITE_MOB;
-		end
+		local info = self.petInfo
+		local levelString = self.levelString or ''
+
+		local typeString = LibPet.getClassificationString(self.petInfo['classification'])
 		if (typeString) then
-			GameTooltip:AddLine(string.format(TOOLTIP_UNIT_LEVEL_CLASS_TYPE, levelString, info.f, typeString),
+			GameTooltip:AddLine(string.format(TOOLTIP_UNIT_LEVEL_CLASS_TYPE, levelString, LibPet.getLocalizedFamilyName(info['family']), typeString),
 				HIGHLIGHT_FONT_COLOR.r, HIGHLIGHT_FONT_COLOR.g, HIGHLIGHT_FONT_COLOR.b);
 		else
-			GameTooltip:AddLine(string.format(TOOLTIP_UNIT_LEVEL_CLASS, levelString, info.f),
+			GameTooltip:AddLine(string.format(TOOLTIP_UNIT_LEVEL_CLASS, levelString, LibPet.getLocalizedFamilyName(info['family'])),
 				HIGHLIGHT_FONT_COLOR.r, HIGHLIGHT_FONT_COLOR.g, HIGHLIGHT_FONT_COLOR.b);
 		end
-		GameTooltip:AddLine(string.format(PET_DIET_TEMPLATE, table.concat(FHH_PetDiets[info.f], ", ")),
+		local diet = LibPet.getDietStrings(self.petInfo['family'])
+		GameTooltip:AddLine(string.format(PET_DIET_TEMPLATE, table.concat(diet, ", ")),
 			HIGHLIGHT_FONT_COLOR.r, HIGHLIGHT_FONT_COLOR.g, HIGHLIGHT_FONT_COLOR.b, true);
 		GameTooltip:Show();
 	end
@@ -1330,10 +1290,14 @@ end
 
 -- CraftFrame related stuff
 
-function FHH_UICraftIndexForSpell(spellToken, rank)
-	if (not CraftIsPetTraining()) then return nil; end
+---Get craft index for spell
+---/dump FHH_UICraftIndexForSpell('ability_druid_cover', 1)
+---@param spellIcon string
+---@param rank number
+function FHH_UICraftIndexForSpell(spellIcon, rank)
+	if (not _G.CraftIsPetTraining()) then return nil; end
 
-	local index = FHH_UISpellCraftIndices[spellToken];
+	local index = FHH_UISpellCraftIndices[spellIcon];
 	if (type(index) == "table") then
 		return index[rank];
 	else
