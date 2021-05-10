@@ -15,6 +15,6 @@ jobs:
         - wget -q -O LibHunterPetInfo.zip https://github.com/Beast-Masters-addons/LibHunterPetInfo/releases/download/v1.3.2/LibHunterPetInfo-v1.3.2-bc.zip
 
 script:
-  - unzip LibHunterPetInfo.zip -d GFW_HuntersHelper
-  - git add GFW_HuntersHelper/LibHunterPetInfo
-  - curl -s https://raw.githubusercontent.com/BigWigsMods/packager/master/release.sh | bash -s -- -g $GAME_VERSION
+  - mkdir .release
+  - unzip LibHunterPetInfo.zip -d .release/GFW_HuntersHelper
+  - curl -s https://raw.githubusercontent.com/BigWigsMods/packager/master/release.sh | bash -s -- -g $GAME_VERSION -o

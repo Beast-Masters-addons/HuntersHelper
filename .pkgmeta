@@ -3,6 +3,8 @@ package-as: GFW_HuntersHelper
 ignore:
   - scripts
   - FrameXML
+  - tests
+  - LibHunterPetInfo/libs
 
 externals:
   libs/BM-utils:
@@ -45,3 +47,4 @@ externals:
 move-folders:
   GFW_HuntersHelper/GFW_HuntersHelperUI: GFW_HuntersHelperUI
   GFW_HuntersHelper/GFW_HuntersHelper: GFW_HuntersHelper
+
