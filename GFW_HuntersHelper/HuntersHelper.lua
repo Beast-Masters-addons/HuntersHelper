@@ -364,6 +364,10 @@ function FHH_MinimapButtonTooltip()
 
 			for spellIcon, rank in GFWTable.PairsByKeys(LibPet.petSkills(petId)) do
 				local spellId, spellName = PetSpells.getSpellFromIcon(spellIcon, rank)
+				if spellName == nil then
+					utils:error(('Unable to get spell name for icon %s rank %d id %s'):format(spellIcon, rank, spellId or 'nil'))
+					spellName = spellIcon
+				end
 
 				local spellColor;
 				if HHSpells:isSpellKnown(spellIcon, rank) then
