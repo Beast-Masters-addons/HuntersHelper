@@ -16,6 +16,7 @@
 ## LoadManagers: AddonLoader
 ## X-LoadOn-Class: Hunter
 ## OptionalDeps: LibHunterPetInfo, LibStub
+## X-WoWI-ID: 25998
 
 #@no-lib-strip@
 Libs.xml
