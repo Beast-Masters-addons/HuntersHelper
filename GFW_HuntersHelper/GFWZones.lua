@@ -117,9 +117,9 @@ local tempAdjacentZones = {
 	["Winterspring"] = {"Moonglade", "Felwood"},
 
 -- Instances / Battlegrounds / etc.
-	["Ruins of Ahn'Qiraj"] = {"Gates of Ahn'Qiraj"},
-	["Ahn'Qiraj"] = {"Gates of Ahn'Qiraj"},
-	["Gates of Ahn'Qiraj"] = {"Silithus", "Ruins of Ahn'Qiraj", "Ahn'Qiraj"},
+	["Ruins of Ahn'Qiraj"] = {"Ahn'Qiraj"},
+	["Ahn'Qiraj"] = {"Ahn'Qiraj"},
+	["Ahn'Qiraj"] = {"Silithus", "Ruins of Ahn'Qiraj", "Ahn'Qiraj"},
 	["Arathi Basin"] = {"Arathi Highlands"},
 	["Alterac Valley"] = {"Alterac Mountains"},
 	["Blackfathom Deeps"] = {"Ashenvale"},
