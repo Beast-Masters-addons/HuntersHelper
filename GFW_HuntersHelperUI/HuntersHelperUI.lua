@@ -258,12 +258,6 @@ function FHH_UISpellAndRankStatus(spellIcon, rank)
 	local petKnownRank;
 	petKnownRank = HHSpells:getHighestKnownRank(spellIcon)
 
-	local petLevel = _G.UnitLevel("pet")
-	if not petLevel then
-		return
-	end
-	local petFamilyInfo = LibPet.getFamilyInfoFromTexture(_G.GetPetIcon())
-
 	if (HHSpells:isSpellKnown(spellIcon)) then
 		-- hunter knows the spell in general, test rank
 		if (HHSpells:isSpellKnown(spellIcon, rank)) then
@@ -272,10 +266,11 @@ function FHH_UISpellAndRankStatus(spellIcon, rank)
 				if (petKnownRank and (rank <= petKnownRank)) then
 					return "trained";
 				else
+					local petFamilyInfo = LibPet.getFamilyInfoFromTexture(_G.GetPetIcon())
 					if (not PetSpells.learnableByFamily(spellIcon, petFamilyInfo['id'])) then
 						-- pet can't learn any rank of this spell
 						return "nevertrain";
-					elseif (spell['level'] > petLevel) then
+					elseif (spell['level'] > _G.UnitLevel("pet")) then
 						return "untrainable";
 					else
 						return "trainable";
