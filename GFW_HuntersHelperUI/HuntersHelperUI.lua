@@ -146,17 +146,16 @@ function FHH_UIUpdateList()
 			end
 
 			if (zonePets ~= {}) then
-				local listItem = {};
+				local listItemHeader = {};
 
 				--Zone name header
-				listItem.name = zoneName
-				listItem.header = 1;
-				listItem.expanded = not FHH_UICollapsedHeaders[listItem.name];
+				listItemHeader.name = zoneName
+				listItemHeader.header = 1;
+				listItemHeader.expanded = not FHH_UICollapsedHeaders[listItemHeader.name];
 
 				if zonePets ~= nil then
-					table.insert(FHH_UIListItems, listItem);
 					for petId, petInfo in pairs(zonePets) do
-						listItem = {};
+						local listItem = {};
 						listItem.name = petInfo['name'];
 						listItem.petInfo = petInfo
 						listItem.petSpells = LibPet.petSkills(petId)
@@ -179,6 +178,10 @@ function FHH_UIUpdateList()
 							end
 
 							if (listItem.petSpells ~= {} and not FHH_UIFilterKnownSkills[listItem.status]) then
+								if listItemHeader ~= nil then
+									table.insert(FHH_UIListItems, listItemHeader)
+									listItemHeader = nil
+								end
 								table.insert(FHH_UIListItems, listItem);
 							end
 						end
