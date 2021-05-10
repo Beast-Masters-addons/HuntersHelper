@@ -16,6 +16,7 @@ local HHZoneLocale = _G['HHZoneLocale']
 _G['HHVersion'] = 'HuntersHelper @project-version@ @game-type@ LibHunterPetInfo '..LibPet.version
 
 -- Saved configuration & info
+local spellNamesToIcons = PetSpells.generateNamesToIcons()
 FHH_KnownSpells = {};
 
 -- Runtime state
@@ -200,9 +201,7 @@ function FHH_ChatCommandHandler(msg)
 	end
 
 	if (msg == "version") then
-		local title = GetAddOnMetadata(ADDON_NAME, "Title");
-		local version = GetAddOnMetadata(ADDON_NAME, "Version");
-		GFWUtils.Print(title.." "..version);
+		GFWUtils.Print(_G['HHVersion']);
 		return;
 	end
 		
@@ -257,11 +256,6 @@ function FHH_ChatCommandHandler(msg)
 		
 	local _, _, cmd, spellQuery, rankNum = string.find(msg, "(find%w*) ([^%d]+) *(%d*)");
 	if (cmd == "find" or cmd == "findall") then
-		--TODO: Rewrite this
-		utils:error('Find command needs rewrite')
-		if true then
-			return
-		end
 		if (spellQuery == nil or spellQuery == "") then
 			GFWUtils.Print("Usage: "..GFWUtils.Hilite("/hh find <ability> <rank>"));
 			return;
@@ -270,37 +264,16 @@ function FHH_ChatCommandHandler(msg)
 		spellQuery = string.gsub(spellQuery, "^%s+", ""); -- strip leading spaces
 		spellQuery = string.gsub(spellQuery, "%s+$", ""); -- and trailing spaces
 		spellQuery = string.lower(spellQuery);
-		local spellToken;
-		-- first, look up the input against our spell ID keys
-		if (FHH_RequiredLevel[spellQuery]) then
-			spellToken = spellQuery;
-		end
-		if (spellToken == nil and FHH_NewInfo and FHH_NewInfo.SpellTokensToNames and FHH_NewInfo.SpellTokensToNames[spellQuery]) then
-			spellToken = spellQuery;
-		end
 
-		-- failing that, try looking it up as a proper name, case insensitively
-		if (spellToken == nil) then
-			for properName in pairs(FHH_SpellNamesToTokens) do
-				if (string.lower(properName) == spellQuery) then
-					spellToken = FHH_SpellNamesToTokens[properName];
-				end
-			end
-			if (spellToken == nil and FHH_NewInfo and FHH_NewInfo.SpellNamesToTokens) then
-				for properName in pairs(FHH_NewInfo.SpellNamesToTokens) do
-					if (string.lower(properName) == spellQuery) then
-						spellToken = FHH_NewInfo.SpellNamesToTokens[properName];
-					end
-				end
+		-- try looking it up as a proper name, case insensitively
+
+		for properName, spellIcon in pairs(spellNamesToIcons) do
+			if (string.lower(properName) == spellQuery) then
+				FHH_Find(spellIcon, rankNum)
+				return
 			end
 		end
-		
-		if (spellToken == nil) then
-			GFWUtils.Print(format(FHH_FIND_SPELL_UNKNOWN, GFWUtils.Hilite(spellQuery)));
-			return;
-		end
-		FHH_Find(spellToken, rankNum);
-		return;
+		GFWUtils.Print(format(FHH_FIND_SPELL_UNKNOWN, GFWUtils.Hilite(spellQuery)));
 	end
 	
 	-- if we got all the way to here, we got invalid input.
@@ -533,46 +506,25 @@ end
 
 ------------------------------------------------------
 
-function FHH_Find(spellToken, rankNum) --TODO: Rewrite this
-	if true then
-		print('find needs rewrite')
-		return
-	end
-	--local niceSpellName = FHH_NameForSpellToken(spellToken);
-	if (niceSpellName == nil and FHH_NewInfo and FHH_NewInfo.SpellTokensToNames and FHH_NewInfo.SpellTokensToNames[spellToken]) then
-		niceSpellName = FHH_NewInfo.SpellTokensToNames[spellToken];
-	end
-	
-	local rankTable = FHH_RequiredLevel[spellToken];
-	local newRankTable;
-	if (FHH_NewInfo and FHH_NewInfo.RequiredLevel) then
-		newRankTable = FHH_NewInfo.RequiredLevel[spellToken];
-	end
-	if (rankTable == nil or (type(rankTable) == "table" and GFWTable.Count(rankTable) == 0)) then
-		if (newRankTable == nil or (type(rankTable) == "table" and GFWTable.Count(newRankTable) == 0) == 0) then
-			GFWUtils.Print(format(FHH_FIND_MISSING_INFO, GFWUtils.Hilite(niceSpellName)));
-			return;
-		else
-			rankTable = newRankTable;
-		end
-	end
-	
+function FHH_Find(spellIcon, rankNum) --TODO: Rewrite this
 	rankNum = tonumber(rankNum);
+	local spellInfo = PetSpells.getSpellPropertiesByIcon(spellIcon, rankNum or 1)
+	local niceSpellName = _G.GetSpellInfo(spellInfo['id'])
+	local isTrainer = PetSpells.getSkillSource(spellIcon) == 'trainer'
+
 	if (rankNum) then
-		if (not rankTable[rankNum]) then
+		if (not spellInfo) then
 			GFWUtils.Print(format(FHH_FIND_RANK_UNKNOWN, GFWUtils.Hilite(niceSpellName), GFWUtils.Hilite(rankNum)));
 			return;
 		end
-		
+
 		-- report minimum pet level for ability
-		local minLevel = rankTable[rankNum];
+		local minLevel = spellInfo['level'];
 		local petLevel = MAX_PLAYER_LEVEL;
 		if (UnitExists("pet")) then
 			petLevel = tonumber(UnitLevel("pet"));
 		end
-		if (minLevel == nil) then
-			minLevel = newRankTable[rankNum];
-		end
+
 		if (minLevel == nil) then
 			local version = GetAddOnMetadata(ADDON_NAME, "Version");
 			GFWUtils.Print(format(FHH_ERROR_MISSING_LVL, version, GFWUtils.Hilite(niceSpellName.." "..rankNum)));
@@ -585,67 +537,43 @@ function FHH_Find(spellToken, rankNum) --TODO: Rewrite this
 				GFWUtils.Print(format(FHH_FIND_REQUIRES_LVL, GFWUtils.Hilite(niceSpellName.." "..rankNum), GFWUtils.Red(minLevel)));
 			end
 		end
-	elseif (type(rankTable) == "number") then
-		-- we have a spell with only one rank (that's not named "Rank 1")
-		-- report minimum pet level for ability
-		local minLevel = rankTable;
-		local petLevel = MAX_PLAYER_LEVEL;
-		if (UnitExists("pet")) then
-			petLevel = tonumber(UnitLevel("pet"));
-		end
-		if (minLevel == nil) then
-			local version = GetAddOnMetadata(ADDON_NAME, "Version");
-			GFWUtils.Print(format(FHH_ERROR_MISSING_LVL, version, GFWUtils.Hilite(niceSpellName)));
-		else
-			if (type(minLevel) == "string") then
-				GFWUtils.Print(format(FHH_FIND_REQUIRES_LVL_ASSUMED, GFWUtils.Hilite(niceSpellName.." "..rankNum), GFWUtils.Hilite(minLevel)));
-			elseif (petLevel >= minLevel) then
-				GFWUtils.Print(format(FHH_FIND_REQUIRES_LVL, GFWUtils.Hilite(niceSpellName.." "..rankNum), GFWUtils.Hilite(minLevel)));
-			else
-				GFWUtils.Print(format(FHH_FIND_REQUIRES_LVL, GFWUtils.Hilite(niceSpellName.." "..rankNum), GFWUtils.Red(minLevel)));
-			end
-		end
 	else
 		local knownRanks = {};
-		for rankTableNum in pairs(rankTable) do
+		for rankTableNum in GFWTable.PairsByKeys(PetSpells.getSpellRanks(spellIcon)) do
 			table.insert(knownRanks, rankTableNum);
 		end
-		local newRanks = {};
-		for rankTableNum in pairs(newRankTable or {}) do
-			table.insert(newRanks, rankTableNum);
-		end
-		local allRanks = GFWTable.Merge(knownRanks, newRanks);
-		GFWUtils.Print(format(FHH_FIND_RANKS_LISTED, GFWUtils.Hilite(niceSpellName))..table.concat(allRanks, " "));
-		if (not FHH_TrainerSpells[spellToken]) then
+
+		GFWUtils.Print(format(FHH_FIND_RANKS_LISTED, GFWUtils.Hilite(niceSpellName))..table.concat(knownRanks, " "));
+
+		if isTrainer then
 			GFWUtils.Print(format(FHH_FIND_NEED_RANK, spellToken));
 		end
 	end
 
 	-- report available creature families
-	local families = FHH_LearnableBy[spellToken];
-	if (type(families) == "table" and FHH_NewInfo and FHH_NewInfo.LearnableBy and FHH_NewInfo.LearnableBy[spellToken]) then
-		families = GFWTable.Merge(families, FHH_NewInfo.LearnableBy[spellToken]);
-		if (#(GFWTable.Diff(families, FHH_AllFamilies)) == 0 ) then
-			families = FHH_ALL_FAMILIES;
-		end
+	local families = PetSpells.learnableByFamilies(spellInfo['icon'])
+	for key, familyId in pairs(families) do
+		families[key] = LibPet.familyName(familyId)
 	end
-	if (families or (type(families) == "table" and #families == 0)) then
-		if (type(families) == "string") then
-			GFWUtils.Print(format(FHH_FIND_LEARNABLE_BY, GFWUtils.Hilite(niceSpellName), GFWUtils.Hilite(families)));
-		else
-			local listText = table.concat(families, ", ");
-			GFWUtils.Print(format(FHH_FIND_LEARNABLE_BY, GFWUtils.Hilite(niceSpellName), GFWUtils.Hilite(listText)));
-		end
+	local familyCount = _G.GFWTable.Count(families)
+
+	if familyCount == _G.GFWTable.Count(LibPet.getFamilyNames()) then
+		families = FHH_ALL_FAMILIES
+	elseif familyCount == 1 then
+		families = families[1]
+	else
+		families = table.concat(families, ", ");
 	end
+	GFWUtils.Print(format(FHH_FIND_LEARNABLE_BY, GFWUtils.Hilite(niceSpellName), GFWUtils.Hilite(families)))
 
 	-- case 1: first levels of Growl are innate
-	if (spellToken == "growl" and rankNum and rankNum <= 2) then
+	if (spellIcon == "ability_physical_taunt" and rankNum and rankNum <= 2) then
 		GFWUtils.Print(format(FHH_FIND_GROWL_INNATE, GFWUtils.Hilite(niceSpellName.." "..rankNum)));
 		return;
 	end
-	
+
 	-- case 2: spells taught by trainers, for which rank doesn't matter
-	if (FHH_TrainerSpells[spellToken]) then
+	if (isTrainer) then
 		local spellSummary = niceSpellName;
 		if (rankNum) then
 			spellSummary = spellSummary.." "..rankNum;
@@ -653,9 +581,9 @@ function FHH_Find(spellToken, rankNum) --TODO: Rewrite this
 		GFWUtils.Print(format(FHH_FIND_PET_TRAINER, GFWUtils.Hilite(spellSummary)));
 		return;
 	end
-	
+
 	if (rankNum == nil and type(rankTable) == "table") then return; end
-	
+
 	--case 3: lookup by spell and rank, report by zone (sanity check first)
 	local maxZones = MAX_REPORTED_ZONES;
 	if (cmd == "findall") then
@@ -665,10 +593,10 @@ function FHH_Find(spellToken, rankNum) --TODO: Rewrite this
 		GFWUtils.Print(format(FHH_FIND_LEARNED_FROM, GFWUtils.Hilite(niceSpellName.." "..rankNum)));
 	else
 		GFWUtils.Print(format(FHH_FIND_LEARNED_FROM, GFWUtils.Hilite(niceSpellName)));
-	end	
-	
-	local reportLines = FHH_GenerateFindReport(spellToken, rankNum, maxZones);
-	
+	end
+
+	local reportLines = FHH_GenerateFindReport(spellInfo['id'], maxZones);
+
 	if (#reportLines > 0) then
 		for _, reportLine in pairs(reportLines) do
 			GFWUtils.Print(reportLine.zone.." "..GFWUtils.Hilite(FHH_CreatureListString(reportLine.critters)));
@@ -804,44 +732,11 @@ function FHH_GenerateFindReport(spellId, maxZones)
 end
 
 function FHH_CreatureListString(critterList) --TODO: Rewrite this together with find
+	_G['CritterList'] = critterList
+
 	local listString = ""
-	for _, name in pairs(critterList) do
-		local info = FHH_BeastInfo[name];
-		if (info == nil and FHH_NewInfo and FHH_NewInfo.BeastLevels) then
-			info = FHH_NewInfo.BeastLevels[name];
-		end
-		if (info == nil) then
-			listString = listString..", ";
-		else
-			local unlocalizedName = FHH_Localized[name];
-			if (unlocalizedName) then
-				name = unlocalizedName;
-			end
-			listString = listString .. name .. " ";
-			local myLevel = UnitLevel("player");
-			local minLevel = info.min;
-			local maxLevel = info.max;
-			if (info.min > UnitLevel("player")) then
-				minLevel = RED_FONT_COLOR_CODE..info.min..FONT_COLOR_CODE_CLOSE;
-			end
-			if (info.max and info.max > UnitLevel("player")) then
-				maxLevel = RED_FONT_COLOR_CODE..info.max..FONT_COLOR_CODE_CLOSE;
-			end
-			if (info.min == info.max or info.max == nil) then			
-				listString = listString.."("..minLevel;
-			else
-				listString = listString.."("..minLevel.."-"..maxLevel;
-			end
-			if (info.t == nil) then
-				listString = listString.."), ";
-			elseif (info.t == 1) then
-				listString = listString.." "..ELITE.."), ";	-- Elite
-			elseif (info.t == 2) then
-				listString = listString.." "..ITEM_QUALITY3_DESC.."), ";	-- Rare
-			elseif (info.t == 3) then
-				listString = listString.." "..ITEM_QUALITY3_DESC.." "..ELITE.."), ";	-- Rare Elite
-			end				
-		end
+	for _, petInfo in pairs(critterList) do
+		listString = listString .. " " LibPet.petLevelString(petInfo)
 	end
 	listString = string.gsub(listString, ", $", "");
 	return listString;
