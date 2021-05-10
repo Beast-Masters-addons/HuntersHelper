@@ -722,10 +722,12 @@ end
 function FHH_GenerateFindReport(spellId, maxZones)
 	assert(maxZones, 'maxZones not set')
 	local reportLines = {};
-	--local zoneName = GFWZones.UnlocalizedZone(_G.GetRealZoneText());
 	local zoneId = ZoneInfo.getCurrentZoneId()
+
+	--@debug@
 	print('Current zone', zoneId)
 	print('FHH_GenerateFindReport', spellId, maxZones)
+	--@end-debug@
 	local petList = PetSpells.getPetsWithSpell(spellId, zoneId)
 
 	if (GFWTable.Count(petList) > 0) then
@@ -795,8 +797,6 @@ function FHH_GenerateFindReport(spellId, maxZones)
 							shouldBreak = true;
 							break;
 						end
-					else
-						utils:printf('No pets with spell %d in zone %s', spellId, zoneName)
 					end
 				end
 			end
@@ -805,7 +805,9 @@ function FHH_GenerateFindReport(spellId, maxZones)
 	end
 
 	if _G.GFWTable.Count(petList) == 0 then
+		--@debug@
 		utils:sprintf('No pets found for spell %s', spellId)
+		--@end-debug@
 	end
 	return reportLines;
 end

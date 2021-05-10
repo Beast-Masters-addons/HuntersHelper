@@ -46,7 +46,9 @@ end
 function FHH_UIOnShow()
 	FHH_UIFilterFamily = UnitCreatureFamily("pet");
 	if not FHH_UIFilterFamily then
+		--@debug@
 		print('No active pet')
+		--@end-debug@
 		return
 	end
 
@@ -751,7 +753,9 @@ end
 function FHH_UIShowPetDetail(listItem)
 	local petInfo = listItem.petInfo
 	local familyInfo = LibPet.familyInfo(petInfo['family'])
+	--@debug@
 	print('Show pet details', petInfo['name'])
+	--@end-debug@
 	FHH_UIDetailScrollFrame:SetVerticalScroll(0);
 
 	--local info = FHH_BeastInfo[petInfo['name']];
@@ -875,7 +879,6 @@ function FHH_UISetBeastDetail(button, petInfo)
 			levelText:SetText(levelString);
 			button.levelString = levelString
 		else
-			print('minlevel not set for '..petInfo['name'])
 			button.levelString = nil
 		end
 

@@ -66,7 +66,9 @@ end
 function HHSpells:getHighestKnownRank(icon)
     local highest = 0
     if self.knownSpells[icon] == nil then
+        --@debug@
         print('Unknown spell: '..icon)
+        --@end-debug@
         return
     end
     for rank, _ in pairs(self.knownSpells[icon]) do
