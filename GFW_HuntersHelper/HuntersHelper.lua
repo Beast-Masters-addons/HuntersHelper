@@ -13,6 +13,7 @@ local FHH_BeastInfo
 local Tourist = _G.LibStub('LibTouristClassic-1.0')
 local ZoneInfo = _G['ZoneInfo']
 local HHZoneLocale = _G['HHZoneLocale']
+_G['HHVersion'] = 'HuntersHelper @project-version@ @game-type@ LibHunterPetInfo '..LibPet.version
 
 -- Saved configuration & info
 FHH_KnownSpells = {};
