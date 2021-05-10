@@ -17,16 +17,6 @@ local HHZoneLocale = _G['HHZoneLocale']
 -- Saved configuration & info
 FHH_KnownSpells = {};
 
-FHH_Options = {};
-FHH_Defaults = {
-	NoBeastTooltip = false,
-	BeastTooltipOnlyHunter = false,
-	ShowMinimap = false,
-	MinimapPosition = 260,
-	ShowAlreadyKnownBeasts = false,
-	NoUITooltip = false,
-};
-
 -- Runtime state
 FHH_State = { };
 FHH_State.TamingCritter = nil;

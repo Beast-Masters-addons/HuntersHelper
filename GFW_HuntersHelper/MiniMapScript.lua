@@ -12,7 +12,6 @@ end
 
 function FHH_MoveMinimapButton()
 	local db = _G['HuntersHelperDB']
-	local default = FHH_Defaults.MinimapPosition;
 	local xPos = 52 - (80 * math.cos(math.rad(db.MinimapButtonPosition or 260 + 90)));
 	local yPos = (80 * math.sin(math.rad(db.MinimapButtonPosition or 260 + 90))) - 52;
 	FHH_MinimapFrame:SetPoint("TOPLEFT", "Minimap", "TOPLEFT", xPos, yPos);
