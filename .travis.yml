@@ -10,7 +10,7 @@ jobs:
 
     - name: 'TBC'
       install:
-        - export GAME_VERSION="bc"
+        - export GAME_VERSION="bcc"
         - git clone https://github.com/Gethe/wow-ui-source tests/wow-ui-source -b classic_beta
         - wget -q -O LibHunterPetInfo.zip https://github.com/Beast-Masters-addons/LibHunterPetInfo/releases/download/v1.4/LibHunterPetInfo-v1.4-bc.zip
 

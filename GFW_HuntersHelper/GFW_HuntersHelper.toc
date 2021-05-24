@@ -1,5 +1,5 @@
 ## Interface-Classic: 11307
-## Interface-BC: 20501
+## Interface-BCC: 20501
 ## Version: @project-version@
 ## X-Revision: @project-revision@
 ## X-Date: @project-date-iso@
