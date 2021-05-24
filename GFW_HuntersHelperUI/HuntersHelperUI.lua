@@ -261,7 +261,7 @@ function FHH_UISpellAndRankStatus(spellIcon, rank)
 	local petKnownRank;
 	petKnownRank = HHSpells:getHighestKnownRank(spellIcon)
 
-	if (HHSpells:isSpellKnown(spellIcon)) then
+	if (HHSpells:hunterKnowSpell(spellIcon)) then
 		-- hunter knows the spell in general, test rank
 		if (HHSpells:isSpellKnown(spellIcon, rank)) then
 			-- hunter knows this rank, check pet

@@ -19,6 +19,12 @@ function HHSpells:saveKnownSpell(icon, rankNum, spellId)
     end
 end
 
+---Does the hunter know the spell with the given icon?
+function HHSpells:hunterKnowSpell(icon)
+    assert(self.knownSpells, 'Known spells not set')
+    return self.knownSpells[icon] ~= nil
+end
+
 --/dump HHSpells:isSpellKnown('ability_hunter_pet_boar', 1)
 function HHSpells:isSpellKnown(icon, rank)
     if self.knownSpells == {} or self.knownSpells[icon] == nil then
