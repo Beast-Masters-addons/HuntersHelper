@@ -6,13 +6,13 @@ jobs:
       install:
         - export GAME_VERSION="classic"
         - git clone https://github.com/Gethe/wow-ui-source tests/wow-ui-source -b classic
-        - wget -q -O LibHunterPetInfo.zip https://github.com/Beast-Masters-addons/LibHunterPetInfo/releases/download/v1.4/LibHunterPetInfo-v1.4-classic.zip
+        - wget -q -O LibHunterPetInfo.zip https://github.com/Beast-Masters-addons/LibHunterPetInfo/releases/download/v1.5/LibHunterPetInfo-v1.5-classic.zip
 
     - name: 'TBC'
       install:
         - export GAME_VERSION="bcc"
         - git clone https://github.com/Gethe/wow-ui-source tests/wow-ui-source -b classic_beta
-        - wget -q -O LibHunterPetInfo.zip https://github.com/Beast-Masters-addons/LibHunterPetInfo/releases/download/v1.4/LibHunterPetInfo-v1.4-bc.zip
+        - wget -q -O LibHunterPetInfo.zip https://github.com/Beast-Masters-addons/LibHunterPetInfo/releases/download/v1.5/LibHunterPetInfo-v1.5-bc.zip
 
 script:
   - mkdir .release
