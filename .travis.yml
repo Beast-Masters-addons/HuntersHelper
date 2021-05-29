@@ -12,7 +12,7 @@ jobs:
       install:
         - export GAME_VERSION="bcc"
         - git clone https://github.com/Gethe/wow-ui-source tests/wow-ui-source -b classic_beta
-        - wget -q -O LibHunterPetInfo.zip https://github.com/Beast-Masters-addons/LibHunterPetInfo/releases/download/v1.5/LibHunterPetInfo-v1.5-bc.zip
+        - wget -q -O LibHunterPetInfo.zip https://github.com/Beast-Masters-addons/LibHunterPetInfo/releases/download/v1.5/LibHunterPetInfo-v1.5-bcc.zip
 
 script:
   - mkdir .release
