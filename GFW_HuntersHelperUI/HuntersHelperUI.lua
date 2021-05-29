@@ -644,8 +644,13 @@ function FHH_UIShowSpellDetail(spellIcon, rank)
 			FHH_UIDetailCost:SetText("");
 		end
 
-		if (craftType ~= "used") then
-			_G.CraftCreateButton:Enable();
+		if (spellCraftInfo['petKnows'] == false) then
+			--print(('Can learn %s rank %s'):format(spellIcon, rank))
+			_G.CraftCreateButton:Enable()
+			_G.SelectCraft(spellCraftInfo['craftIndex'])
+		else
+			--print(('Already knows %s rank %s'):format(spellIcon, rank))
+			_G.CraftCreateButton:Disable()
 		end
 	else
 		FHH_UIDetailCost:SetText("");
