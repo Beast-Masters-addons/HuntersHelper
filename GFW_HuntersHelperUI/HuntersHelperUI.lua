@@ -263,10 +263,11 @@ function FHH_UISpellAndRankStatus(spellIcon, rank)
 
 	if (HHSpells:hunterKnowSpell(spellIcon)) then
 		-- hunter knows the spell in general, test rank
-		if (HHSpells:isSpellKnown(spellIcon, rank)) then
+		local petSpellInfo = HHSpells:isSpellKnown(spellIcon, rank)
+		if petSpellInfo ~= nil then
 			-- hunter knows this rank, check pet
 			if (_G.UnitExists("pet") and _G.FHH_ReplacingCraftFrame) then
-				if (petKnownRank and (rank <= petKnownRank)) then
+				if petSpellInfo['petKnows'] == true then
 					return "trained";
 				else
 					local petFamilyInfo = LibPet.getFamilyInfoFromTexture(_G.GetPetIcon())
