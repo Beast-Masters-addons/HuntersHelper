@@ -1188,8 +1188,8 @@ function FHH_UIFamilyDropDown_Initialize()
 	info.checked = (FHH_UIFilterFamily == nil);
 	UIDropDownMenu_AddButton(info);
 
-	for id, family in pairs(LibPet.getFamilyNames()) do
-		info.text = family;
+	for id, _ in pairs(LibPet.getTable('Families')) do
+		info.text = LibPet.getLocalizedFamilyName(id)
 		info.value = id
 		info.func = FHH_UIFamilyDropDown_OnClick;
 		info.checked = (FHH_UIFilterFamily == id);
