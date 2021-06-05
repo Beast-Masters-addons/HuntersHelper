@@ -19,22 +19,41 @@ function HHSpells:saveKnownSpell(icon, rankNum, spellId)
     end
 end
 
+function HHSpells:getKnownSpell(icon, rank)
+    if not self.knownSpells or self.knownSpells == {} then
+        self:scanCraftFrame()
+        if not self.knownSpells then
+            --@debug@
+            print('Unable to scan craft frame')
+            --@end-debug@
+            return
+        end
+    end
+    if not self.knownSpells[icon] then
+        --@debug@
+        print('Unknown spell: '..icon)
+        --@end-debug@
+        return
+    end
+
+    if not rank then
+        return self.knownSpells[icon]
+    else
+        return self.knownSpells[icon][rank]
+    end
+end
+
 ---Does the hunter know the spell with the given icon?
 function HHSpells:hunterKnowSpell(icon)
-    assert(self.knownSpells, 'Known spells not set')
-    return self.knownSpells[icon] ~= nil
+    return self:getKnownSpell(icon) ~= nil
 end
 
 --/dump HHSpells:isSpellKnown('ability_hunter_pet_boar', 1)
 function HHSpells:isSpellKnown(icon, rank)
-    if self.knownSpells == {} or self.knownSpells[icon] == nil then
-        return
-    end
     if rank == nil then
         rank = 1
     end
-
-    return self.knownSpells[icon][rank]
+    return self:getKnownSpell(icon, rank)
 end
 
 ---Save spells known by the current pet
@@ -71,13 +90,10 @@ end
 --/dump HHSpells:getHighestKnownRank("ability_physical_taunt")
 function HHSpells:getHighestKnownRank(icon)
     local highest = 0
-    if self.knownSpells[icon] == nil then
-        --@debug@
-        print('Unknown spell: '..icon)
-        --@end-debug@
+    if self:getKnownSpell(icon) == nil then
         return
     end
-    for rank, _ in pairs(self.knownSpells[icon]) do
+    for rank, _ in pairs(self:getKnownSpell(icon)) do
         highest = math.max(highest, rank)
     end
     return highest
