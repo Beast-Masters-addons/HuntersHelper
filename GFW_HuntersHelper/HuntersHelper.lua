@@ -791,10 +791,11 @@ function FHH_SpellHasLearnableBeasts(spellIcon, spellRank)
 		return false
 	elseif type(source) == 'table' then
 		return true
-	elseif source == nil then
+	elseif source == nil or source == 'unknown' then
 		return false
 	else
 		GFWUtils.Print('Unknown source '..source .. ', Icon: ' .. spellIcon .. ', Rank: ' .. spellRank)
+		return false
 		-- error('Unknown source '..source)
 	end
 end
