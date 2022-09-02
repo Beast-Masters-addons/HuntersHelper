@@ -1,5 +1,6 @@
-## Interface-Classic: 11307
-## Interface-BC: 20501
+## Interface-BCC: 30400
+## Interface-Classic: 11403
+## Interface-Wrath: 30400
 ## Version: @project-version@
 ## X-Revision: @project-revision@
 ## X-Date: @project-date-iso@
@@ -14,6 +15,7 @@
 ## LoadOnDemand: 1
 
 FHH_UITemplates.xml
+addon\common.lua
 Localization.lua
 HuntersHelperUI.lua
 HuntersHelperUI.xml
