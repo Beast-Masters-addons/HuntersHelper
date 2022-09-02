@@ -45,3 +45,8 @@ jobs:
         uses: BigWigsMods/packager@v1.0.1
         with:
           args: -g ${{ matrix.game_version }} -o
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: 'Hunters Helper'
+          path: .release
