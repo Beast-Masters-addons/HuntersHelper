@@ -17,6 +17,7 @@
 ## X-LoadOn-Class: Hunter
 ## OptionalDeps: LibHunterPetInfo, LibStub
 ## X-WoWI-ID: 25998
+## X-Wago-ID: baNDgrGo
 
 #@no-lib-strip@
 Libs.xml
