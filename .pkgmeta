@@ -16,6 +16,9 @@ externals:
   libs/AceLocale-3.0:
     url: https://repos.wowace.com/wow/ace3/trunk/AceLocale-3.0
     tag: latest
+  libs/AceConsole-3.0:
+    url: https://repos.wowace.com/wow/ace3/trunk/AceConsole-3.0
+    tag: latest
   libs/AceConfig-3.0:
     url: https://repos.wowace.com/wow/ace3/trunk/AceConfig-3.0
     tag: latest
