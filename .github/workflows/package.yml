@@ -23,7 +23,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        game_version: ['classic', 'bcc']
+        game_version: ['classic', 'wrath']
 
     env:
       WOWI_API_TOKEN: ${{ secrets.WOWI_API_TOKEN }}
@@ -42,11 +42,11 @@ jobs:
           unzip LibHunterPetInfo.zip -d .release/GFW_HuntersHelper
 
       - name: WoW Packager
-        uses: BigWigsMods/packager@v2
+        uses: BigWigsMods/packager@v2.0.6
         with:
           args: -g ${{ matrix.game_version }} -o
 
       - uses: actions/upload-artifact@v3
         with:
-          name: 'Hunters Helper'
+          name: 'HuntersHelper'
           path: .release
