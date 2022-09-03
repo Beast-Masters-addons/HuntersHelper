@@ -24,7 +24,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        game_version: ['classic', 'wrath']
+        game_version: ['classic']
 
     env:
       WOWI_API_TOKEN: ${{ secrets.WOWI_API_TOKEN }}
@@ -49,5 +49,5 @@ jobs:
 
       - uses: actions/upload-artifact@v3
         with:
-          name: 'HuntersHelper'
+          name: HuntersHelper-${{ matrix.game_version }}
           path: .release
