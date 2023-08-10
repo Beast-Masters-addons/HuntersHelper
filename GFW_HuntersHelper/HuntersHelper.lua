@@ -10,7 +10,14 @@ local LibPet = _G['LibPet']
 local PetSpells = _G['PetSpells']
 local HHSpells = _G['HHSpells']
 local FHH_BeastInfo
-local Tourist = _G.LibStub('LibTouristClassic-1.0')
+local Tourist
+if _G.WOW_PROJECT_ID == _G.WOW_PROJECT_CLASSIC then
+	Tourist = _G.LibStub("LibTouristClassicEra")
+elseif _G.WOW_PROJECT_ID == _G.WOW_PROJECT_WRATH_CLASSIC then
+	Tourist = _G.LibStub("LibTouristClassic-1.0")
+else
+	error('HuntersHelper loaded on unknown game version')
+end
 local ZoneInfo = _G['ZoneInfo']
 local HHZoneLocale = _G['HHZoneLocale']
 _G['HHVersion'] = 'HuntersHelper @project-version@ @game-type@ LibHunterPetInfo '..LibPet.version
