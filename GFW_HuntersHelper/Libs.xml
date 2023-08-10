@@ -16,5 +16,4 @@
     <Include file="libs\LibBabble-SubZone\lib.xml"/>
 
     <Script file="libs\HereBeDragons\HereBeDragons-2.0.lua"/>
-    <Script file="libs\LibTourist\LibTouristClassic-1.0.lua"/>
 </Ui>

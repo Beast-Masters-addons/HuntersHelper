@@ -34,8 +34,11 @@ externals:
   libs/LibStub:
     url: https://repos.wowace.com/wow/libstub/trunk
     tag: latest
-  libs/LibTourist:
+  libs/LibTouristClassic:
     url: https://repos.wowace.com/wow/libtourist-classic
+    tag: latest
+  libs/LibTouristClassicEra:
+    url: https://repos.wowace.com/wow/libtourist-classic-era
     tag: latest
   libs/HereBeDragons:
     url: https://github.com/Nevcairiel/HereBeDragons
