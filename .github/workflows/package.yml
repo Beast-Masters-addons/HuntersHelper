@@ -34,7 +34,7 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Get LibHunterPetInfo
         run: |
@@ -43,7 +43,7 @@ jobs:
           unzip LibHunterPetInfo.zip -d .release/GFW_HuntersHelper
 
       - name: WoW Packager
-        uses: BigWigsMods/packager@v2.0.6
+        uses: BigWigsMods/packager@v2.1.0
         with:
           args: -g ${{ matrix.game_version }} -o
 
