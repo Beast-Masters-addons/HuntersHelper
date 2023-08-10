@@ -24,7 +24,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        game_version: ['classic']
+        game_version: ['classic', 'wrath']
 
     env:
       WOWI_API_TOKEN: ${{ secrets.WOWI_API_TOKEN }}
