@@ -15,7 +15,7 @@
 ## LoadOnDemand: 1
 
 FHH_UITemplates.xml
-addon\common.lua
+# addon\common.lua
 Localization.lua
 HuntersHelperUI.lua
 HuntersHelperUI.xml
