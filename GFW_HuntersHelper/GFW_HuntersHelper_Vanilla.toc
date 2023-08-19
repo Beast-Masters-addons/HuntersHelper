@@ -20,7 +20,7 @@
 
 #@no-lib-strip@
 Libs.xml
+libs\LibTouristClassicEra\LibTouristClassicEra.lua
 #@end-no-lib-strip@
 
 addon.xml
-libs\LibTouristClassicEra\LibTouristClassicEra.lua
