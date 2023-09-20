@@ -72,11 +72,11 @@ if ( GetLocale() == "zhCN" ) then
 	FHH_PASSIVE_ABILITIES		= SPELL_PASSIVE
 	FHH_ACTIVE_ABILITIES		= "激活"
 
-	FHH_UI_LEARN_FROM_PET_FMT	= "向 %s 学习" -- yellow
+	FHH_UI_LEARN_FROM_PET_FMT	= "从 %s 学习" -- yellow
 	FHH_UI_PET_CANT_LEARN_FMT	= "%s 还无法学习" -- orange
 	FHH_UI_PET_NEVER_LEARN_FMT	= "%s 无法学习" -- orange
-	FHH_UI_PET_CAN_TRAIN_FMT	= "可以训练 %s" -- blue
-	FHH_UI_PET_TRAINED_FMT	= "%s 已经知道了" -- gray
+	FHH_UI_PET_CAN_TRAIN_FMT	= "可以学习 %s" -- blue
+	FHH_UI_PET_TRAINED_FMT	= "%s 已经学会" -- gray
 
 	FHH_UI_AVAILABLE_TRAINER	= "可从宠物训练师处获得"
 	FHH_UI_AVAILABLE_TAME		= "可通过驯服获得"
