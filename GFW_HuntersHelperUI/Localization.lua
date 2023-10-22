@@ -61,3 +61,35 @@ if ( GetLocale() == "frFR" ) then
 	FHH_UI_LEARNABLE_BY_ALL		= "Peut être appris par tous les familiers."
 
 end
+
+if ( GetLocale() == "zhCN" ) then
+
+	FHH_UI_VIEW_BY_ABILITY		="按能力查看"
+	FHH_UI_VIEW_BY_ZONE			= "按区域查看"
+                        
+	FHH_UI_ALL_FAMILIES			= "所有家族"
+                        
+	FHH_PASSIVE_ABILITIES		= SPELL_PASSIVE
+	FHH_ACTIVE_ABILITIES		= "激活"
+
+	FHH_UI_LEARN_FROM_PET_FMT	= "从 %s 学习" -- yellow
+	FHH_UI_PET_CANT_LEARN_FMT	= "%s 还无法学习" -- orange
+	FHH_UI_PET_NEVER_LEARN_FMT	= "%s 无法学习" -- orange
+	FHH_UI_PET_CAN_TRAIN_FMT	= "可以学习 %s" -- blue
+	FHH_UI_PET_TRAINED_FMT	= "%s 已经学会" -- gray
+
+	FHH_UI_AVAILABLE_TRAINER	= "可从宠物训练师处获得"
+	FHH_UI_AVAILABLE_TAME		= "可通过驯服获得"
+	FHH_UI_GO_LEARN_BEAST		= "你不能向你的宠物传授这个法术，除非你通过驯服以下野兽之一来学习它："
+	FHH_UI_GO_LEARN_TRAINER		= "你不能向你的宠物传授这个法术，除非你通过拜访宠物训练师（大多数主要城市和一些城镇都有）来学习它。"
+	FHH_UI_GROWL_INNATE		= "学习野兽训练后自动知晓。"
+	FHH_UI_UNKNOWN_RANK		= "未在任何已知的野兽身上发现。"
+	FHH_UI_ALSO_FOUND_ON		= "已知；也在以下野兽身上发现："
+
+	FHH_UI_OPTIONS		= "选项..."
+
+	FHH_UI_LEARNABLE_BY		= "可以通过以下方式学习："
+	FHH_UI_LEARNABLE_BY_ALL		= "所有野兽家族都可以学习。"
+
+
+end
