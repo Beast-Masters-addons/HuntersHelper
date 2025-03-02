@@ -1,4 +1,4 @@
-## Interface: 11404
+## Interface: 11506
 ## Version: @project-version@
 ## X-Revision: @project-revision@
 ## X-Date: @project-date-iso@
