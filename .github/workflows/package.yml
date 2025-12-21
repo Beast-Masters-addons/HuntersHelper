@@ -36,12 +36,6 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v5
 
-      - name: Get LibHunterPetInfo
-        run: |
-          mkdir .release
-          wget -q -O LibHunterPetInfo.zip https://github.com/Beast-Masters-addons/LibHunterPetInfo/releases/download/v1.6/LibHunterPetInfo-v1.6-${{ matrix.game_version }}.zip
-          unzip LibHunterPetInfo.zip -d .release/GFW_HuntersHelper
-
       - name: WoW Packager
         uses: BigWigsMods/packager@v2.4.3
         with:
