@@ -1,16 +1,17 @@
--- https://eu.battle.net/forums/en/wow/topic/3483869500#post-2
---https://wow.gamepedia.com/WelcomeHome_-_Your_first_Ace3_Addon
+local addonName = ...
+---@type HuntersHelper
+local addon = _G.LibStub("AceAddon-3.0"):GetAddon(addonName)
 
-local addonName = "GFW_HuntersHelper"
-local titleText = GetAddOnMetadata(addonName, "Title");
-local version = GetAddOnMetadata(addonName, "Version");
-local L = LibStub("AceLocale-3.0"):GetLocale(addonName)
+---@class HuntersHelperConfig
+local config = addon:NewModule("HuntersHelperConfig")
 
-HunterPetHelper = LibStub("AceAddon-3.0"):NewAddon(addonName)
+local AceConfig = _G.LibStub("AceConfig-3.0")
+local AceConfigDialog = _G.LibStub("AceConfigDialog-3.0")
 
-titleText = titleText .. " " .. version;
+local L = _G.LibStub("AceLocale-3.0"):GetLocale(addonName)
 
-local db
+local titleText = addon.name .. " " .. addon.version;
+
 local defaults = {
 	profile = {
 		beastTooltip = true,
@@ -22,20 +23,18 @@ local defaults = {
 	}
 }
 
-local function optionGet(info)
-	return db[info[#info]]
-end
-
-local function optionSet(info, value)
-	db[info[#info]] = value
-	FHH_MinimapButtonCheck()
-end
-
 local options = {
 	type = "group",
 	name = titleText,
-	get = optionGet,
-	set = optionSet,
+    get = function(info)
+        local key = info[#info]
+        return _G['HuntersHelperDB'][key]
+    end,
+    set = function(info, value)
+        local key = info[#info]
+        _G['HuntersHelperDB'][key] = value
+        FHH_MinimapButtonCheck()
+    end,
 	args = {
 		top_description = {
 			type = "description",
@@ -62,7 +61,7 @@ local options = {
 			order = 4,
 			desc = L['options_only_hunter_desc'],
 			disabled = function ()
-				if db.beastTooltip == false then
+				if config:get("beastTooltip") == false then
 					return true
 				else
 					return false
@@ -111,12 +110,30 @@ local options = {
 	}
 }
 
-function HunterPetHelper:OnInitialize() --TODO: Change namespace/Do not use AceAddon?
-	self.db = LibStub("AceDB-3.0"):New("HuntersHelperSettings", defaults, "Default")
-	db = self.db.profile
-	_G['HuntersHelperDB'] = db
+---Open config window
+function config.show()
+    _G.Settings.OpenToCategory(addon.name)
+end
 
-	LibStub("AceConfigRegistry-3.0"):RegisterOptionsTable("HunterPetHelper_options", options)
-	LibStub("AceConfigDialog-3.0"):AddToBlizOptions("HunterPetHelper_options", "Hunters Helper")
-	LibStub("AceConfig-3.0"):RegisterOptionsTable(addonName, options, {"petskills", "pet"})
+function config.reset()
+    _G['HuntersHelperDB'] = defaults['profile']
+end
+
+---Called at event ADDON_LOADED
+function config:OnInitialize()
+    self.optionsFrames = {}
+    if _G['HuntersHelperDB'] == nil then
+        self.reset()
+    end
+end
+
+function config:OnEnable()
+    -- Register the config
+    AceConfig:RegisterOptionsTable(addon.name, options, { "/hhconf" })
+    self.optionsFrames.general = AceConfigDialog:AddToBlizOptions(addon.name)--, nil, nil, "general")
+end
+
+---Get configuration parameter
+function config:get(key)
+    return _G['HuntersHelperDB'][key]
 end

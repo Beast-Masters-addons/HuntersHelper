@@ -13,7 +13,7 @@ utils = _G.LibStub("BM-utils-1")
 local LibPet = _G['LibPet']
 local PetSpells = _G['PetSpells']
 local HHSpells = _G['HHSpells']
-local FHH_BeastInfo
+
 local Tourist
 if _G.WOW_PROJECT_ID == _G.WOW_PROJECT_CLASSIC or _G.WOW_PROJECT_ID == _G.WOW_PROJECT_BURNING_CRUSADE_CLASSIC then
 	Tourist = _G.LibStub("LibTouristClassicEra")
@@ -75,8 +75,6 @@ function FHH_OnEvent(self, event, ...)
 
 	if ( event == "PLAYER_ENTERING_WORLD" or (event == "ADDON_LOADED" and arg1 == addonName)) then
 		_G['HH_SpellNamesToId'] = PetSpells.idToName(true)
-		db = _G['HuntersHelperDB']
-		if not db then error('Unable to load DB') end
 
 		_, realClass = UnitClass("player");
 		if (realClass == "HUNTER") then
@@ -94,10 +92,10 @@ function FHH_OnEvent(self, event, ...)
 
 	elseif ( event == "UPDATE_MOUSEOVER_UNIT" ) then
 
-		if ( UnitExists("mouseover") and not UnitPlayerControlled("mouseover") and db.beastTooltip ) then
+		if ( UnitExists("mouseover") and not UnitPlayerControlled("mouseover") and config:get("beastTooltip") ) then
 
 			local _, myClass = UnitClass("player");
-			if (db.onlyHunter and myClass ~= "HUNTER") then return end
+			if (config:get("onlyHunter") and myClass ~= "HUNTER") then return end
 
 			FHH_ModifyTooltip("mouseover");
 		end
@@ -291,7 +289,7 @@ function FHH_ChatCommandHandler(msg)
 end
 
 function FHH_ShowUI()
-	local _, _, _, _, loadable, _, _ = GetAddOnInfo("GFW_HuntersHelperUI");
+	local _, _, _, loadable, _, _ = C_AddOns.GetAddOnInfo("GFW_HuntersHelperUI");
 
 	if (not BT_Version ) then
 		-- don't replace the training window if Awbee's BeastTraining mod already is
@@ -306,10 +304,10 @@ function FHH_ShowUI()
 	end
 
 	-- if we can't do that, just show the UI and it'll be in "dumb" (not hooked up to Craft API) mode
-	if (loadable and not IsAddOnLoaded("GFW_HuntersHelperUI")) then
+	if (loadable and not C_AddOns.IsAddOnLoaded("GFW_HuntersHelperUI")) then
 		UIParentLoadAddOn("GFW_HuntersHelperUI");
 	end
-	if (IsAddOnLoaded("GFW_HuntersHelperUI")) then
+	if (C_AddOns.IsAddOnLoaded("GFW_HuntersHelperUI")) then
 		-- without the CraftFrame around, we should set things up so our layout gets handled right
 		FHH_UI:SetAttribute("UIPanelLayout-defined", true)
 		FHH_UI:SetAttribute("UIPanelLayout-enabled", true)
@@ -326,7 +324,7 @@ end
 
 function FHH_MinimapButtonCheck()
 	if (FHH_MinimapFrame) then
-		if (db.showMinimapButton) then
+		if (config:get("showMinimapButton")) then
 			FHH_MinimapFrame:Show();
 			FHH_MoveMinimapButton();
 			FHH_MinimapUpdateCount();
