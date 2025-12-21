@@ -1,6 +1,4 @@
-## Interface: 11507
-## Interface-Classic: 11507
-## Interface-Wrath: 30403
+## Interface: 110207, 30403, 20505, 11508
 ## Version: @project-version@
 ## X-Revision: @project-revision@
 ## X-Date: @project-date-iso@
