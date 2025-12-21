@@ -33,8 +33,8 @@ FHH_UIColors = {
 
 
 function FHH_UIOnLoad(self)
-	local title = GetAddOnMetadata("GFW_HuntersHelper", "Title");
-	local version = GetAddOnMetadata("GFW_HuntersHelper", "Version");
+	local title = C_AddOns.GetAddOnMetadata("GFW_HuntersHelper", "Title");
+	local version = C_AddOns.GetAddOnMetadata("GFW_HuntersHelper", "Version");
 	FHH_UITitleText:SetText(title .. " " .. version);
 
 	self:RegisterEvent("ADDON_LOADED");

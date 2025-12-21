@@ -137,9 +137,9 @@ function FHH_OnEvent(self, event, ...)
 
 	elseif ( event == "CRAFT_SHOW" and not BT_Version) then
 
-		local _, _, _, _, loadable, _, _ = GetAddOnInfo("GFW_HuntersHelperUI");
+		local _, _, _, _, loadable, _, _ = C_AddOns.GetAddOnInfo("GFW_HuntersHelperUI");
 		if (loadable and CraftIsPetTraining()) then
-			if (not IsAddOnLoaded("GFW_HuntersHelperUI")) then
+			if (not C_AddOns.IsAddOnLoaded("GFW_HuntersHelperUI")) then
 				UIParentLoadAddOn("GFW_HuntersHelperUI");
 			end
 			FHH_HideCraftFrame(self);
@@ -286,7 +286,7 @@ function FHH_ChatCommandHandler(msg)
 end
 
 function FHH_ShowUI()
-	local _, _, _, loadable, _, _ = C_AddOns.GetAddOnInfo("GFW_HuntersHelperUI");
+	local _, _, _, _, loadable, _, _ = C_AddOns.GetAddOnInfo("GFW_HuntersHelperUI");
 
 	if (not BT_Version ) then
 		-- don't replace the training window if Awbee's BeastTraining mod already is
