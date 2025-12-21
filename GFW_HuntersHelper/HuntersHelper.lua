@@ -11,7 +11,7 @@ local PetSpells = _G['PetSpells']
 local HHSpells = _G['HHSpells']
 local FHH_BeastInfo
 local Tourist
-if _G.WOW_PROJECT_ID == _G.WOW_PROJECT_CLASSIC then
+if _G.WOW_PROJECT_ID == _G.WOW_PROJECT_CLASSIC or _G.WOW_PROJECT_ID == _G.WOW_PROJECT_BURNING_CRUSADE_CLASSIC then
 	Tourist = _G.LibStub("LibTouristClassicEra")
 elseif _G.WOW_PROJECT_ID == _G.WOW_PROJECT_WRATH_CLASSIC then
 	Tourist = _G.LibStub("LibTouristClassic-1.0")
