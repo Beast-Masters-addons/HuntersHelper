@@ -7,6 +7,8 @@ local addonName = ...
 local addon = _G.LibStub("AceAddon-3.0"):GetAddon(addonName)
 ---@type HuntersHelperConfig
 local config = addon:GetModule("HuntersHelperConfig")
+---@type HuntersHelperLDB
+local ldb = addon:GetModule("HuntersHelperLDB")
 
 local utils = _G['BMUtils']
 utils = _G.LibStub("BM-utils-1")
@@ -85,8 +87,6 @@ function FHH_OnEvent(self, event, ...)
 			self:RegisterEvent("CRAFT_UPDATE");
 			self:RegisterEvent("CRAFT_CLOSE");
 			self:RegisterEvent("CHAT_MSG_SYSTEM");
-
-			FHH_MinimapButtonCheck();
 		end
 		self:UnregisterEvent("ADDON_LOADED");
 
@@ -135,10 +135,6 @@ function FHH_OnEvent(self, event, ...)
 			FHH_State.TamingType = nil;
 		end
 
-	elseif ( event == "ZONE_CHANGED_NEW_AREA" ) then
-
-		FHH_MinimapUpdateCount(true);
-
 	elseif ( event == "CRAFT_SHOW" and not BT_Version) then
 
 		local _, _, _, _, loadable, _, _ = GetAddOnInfo("GFW_HuntersHelperUI");
@@ -184,6 +180,7 @@ function FHH_OnEvent(self, event, ...)
 end
 
 function FHH_ChatCommandHandler(msg)
+	--TODO: Replace with AceConfigCmd
 
 	if (msg == "") then
 		if (not FHH_ShowUI()) then
@@ -232,7 +229,7 @@ function FHH_ChatCommandHandler(msg)
 
 	if (msg == "button" or msg == "minimap") then
 		_G['HuntersHelperDB'].showMinimapButton = not _G['HuntersHelperDB'].showMinimapButton
-		FHH_MinimapButtonCheck();
+		ldb:updateCount()
 		return;
 	end
 
@@ -320,36 +317,6 @@ function FHH_ShowUI()
 		return true;
 	end
 	
-end
-
-function FHH_MinimapButtonCheck()
-	if (FHH_MinimapFrame) then
-		if (config:get("showMinimapButton")) then
-			FHH_MinimapFrame:Show();
-			FHH_MoveMinimapButton();
-			FHH_MinimapUpdateCount();
-			FHH_MinimapFrame:RegisterEvent("ZONE_CHANGED_NEW_AREA");
-		else
-			FHH_MinimapFrame:Hide();
-			FHH_MinimapFrame:UnregisterEvent("ZONE_CHANGED_NEW_AREA");
-		end
-	end
-end
-
-function FHH_MinimapUpdateCount(shouldShine)
-	local zoneCritters = FHH_CurrentZoneLearnableBeasts();
-	local count = GFWTable.Count(zoneCritters)
-	if (count > 0) then
-		FHH_MinimapCount:SetText(count);
-		FHH_MinimapFrame_Icon:SetVertexColor(0.5,0.5,0.5);
-		FHH_MinimapCount:Show();
-		if (shouldShine) then
-			FHH_MinimapShineFadeIn();
-		end
-	else
-		FHH_MinimapFrame_Icon:SetVertexColor(1,1,1);
-		FHH_MinimapCount:Hide();
-	end
 end
 
 function FHH_MinimapButtonTooltip()
@@ -460,7 +427,7 @@ end
 function FHH_ScanCraftFrame()
 	if (not CraftFrame or not CraftFrame:IsVisible()) then return; end
 
-	FHH_MinimapUpdateCount();
+	ldb:updateCount()
 	if (FHH_UI and FHH_UI:IsVisible()) then
 		FHH_UIUpdateList();
 		FHH_UIUpdateDisplayList();

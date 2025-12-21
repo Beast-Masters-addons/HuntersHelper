@@ -16,4 +16,6 @@
     <Include file="libs\LibBabble-SubZone\lib.xml"/>
 
     <Script file="libs\HereBeDragons\HereBeDragons-2.0.lua"/>
+    <Script file="libs\LibDataBroker\LibDataBroker-1.1.lua"/>
+    <Include file="libs\LibDBIcon\lib.xml"/>
 </Ui>

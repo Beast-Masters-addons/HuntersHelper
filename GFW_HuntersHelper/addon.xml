@@ -5,6 +5,7 @@
     <Script file="addon\HHZoneLocale.lua"/>
     <Script file="locale\locale_enUS.lua"/>
     <Script file="addon\options.lua"/>
+    <Script file="addon\ldb.lua"/>
     <Script file="GFWUtils.lua"/>
     <Script file="GFWTable.lua"/>
     <Script file="GFWZones.lua"/>
