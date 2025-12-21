@@ -2,7 +2,11 @@
 -- HuntersHelper.lua
 -- @project-revision@ @project-date-iso@
 ------------------------------------------------------
-local ADDON_NAME = "GFW_HuntersHelper"
+local addonName = ...
+---@type HuntersHelper
+local addon = _G.LibStub("AceAddon-3.0"):GetAddon(addonName)
+---@type HuntersHelperConfig
+local config = addon:GetModule("HuntersHelperConfig")
 
 local utils = _G['BMUtils']
 utils = _G.LibStub("BM-utils-1")
@@ -69,7 +73,7 @@ function FHH_OnEvent(self, event, ...)
 	local arg1 = ...
 	--DevTools_Dump({event=event, arg1=arg1, arg2=arg2, arg3=arg3, arg4=arg4, arg5=arg5, arg6=arg6, arg7=arg7, arg8=arg8, arg9=arg9});
 
-	if ( event == "PLAYER_ENTERING_WORLD" or (event == "ADDON_LOADED" and arg1 == ADDON_NAME)) then
+	if ( event == "PLAYER_ENTERING_WORLD" or (event == "ADDON_LOADED" and arg1 == addonName)) then
 		_G['HH_SpellNamesToId'] = PetSpells.idToName(true)
 		db = _G['HuntersHelperDB']
 		if not db then error('Unable to load DB') end
@@ -191,9 +195,7 @@ function FHH_ChatCommandHandler(msg)
 	end
 	
 	if ( msg == "help" ) then
-		local title = GetAddOnMetadata(ADDON_NAME, "Title");
-		local version = GetAddOnMetadata(ADDON_NAME, "Version");
-		GFWUtils.Print(title.." "..version..":");
+		GFWUtils.Print(addon.name.." "..addon.version..":");
 		
 		GFWUtils.Print(GFWUtils.Hilite(GFWUtils.Hilite(SLASH_FHH1).." | "..GFWUtils.Hilite(SLASH_FHH2)).." - "..FHH_HELP_SHOWUI);
 		GFWUtils.Print(GFWUtils.Hilite(GFWUtils.Hilite(SLASH_FHH1).." | "..GFWUtils.Hilite(SLASH_FHH2)).." <command> ");
@@ -208,7 +210,7 @@ function FHH_ChatCommandHandler(msg)
 	end
 
 	if (msg == "version") then
-		GFWUtils.Print(_G['HHVersion']);
+		GFWUtils.Print(addon.version);
 		return;
 	end
 		
@@ -353,10 +355,7 @@ function FHH_MinimapUpdateCount(shouldShine)
 end
 
 function FHH_MinimapButtonTooltip()
-
-	local title = GetAddOnMetadata(ADDON_NAME, "Title");
-	local version = GetAddOnMetadata(ADDON_NAME, "Version");
-	GameTooltip:SetText(title .. " " .. version);
+	GameTooltip:SetText(addon.name .. " " .. addon.version);
 	
 	local zoneCritters = FHH_CurrentZoneLearnableBeasts();
 	local zoneCrittersCount = GFWTable.Count(zoneCritters)
@@ -537,8 +536,7 @@ function FHH_Find(spellIcon, rankNum) --TODO: Rewrite this
 		end
 
 		if (minLevel == nil) then
-			local version = GetAddOnMetadata(ADDON_NAME, "Version");
-			GFWUtils.Print(format(FHH_ERROR_MISSING_LVL, version, GFWUtils.Hilite(niceSpellName.." "..rankNum)));
+			GFWUtils.Print(format(FHH_ERROR_MISSING_LVL, addon.version, GFWUtils.Hilite(niceSpellName.." "..rankNum)));
 		else
 			if (type(minLevel) == "string") then
 				GFWUtils.Print(format(FHH_FIND_REQUIRES_LVL_ASSUMED, GFWUtils.Hilite(niceSpellName.." "..rankNum), GFWUtils.Hilite(minLevel)));
@@ -613,8 +611,7 @@ function FHH_Find(spellIcon, rankNum) --TODO: Rewrite this
 			GFWUtils.Print(reportLine.zone.." "..GFWUtils.Hilite(FHH_CreatureListString(reportLine.critters)));
 		end
 	else
-		local version = GetAddOnMetadata(ADDON_NAME, "Version");
-		GFWUtils.Print(format(FHH_ERROR_NO_BEASTS, version, GFWUtils.Hilite(niceSpellName.." "..rankNum)));
+		GFWUtils.Print(format(FHH_ERROR_NO_BEASTS, addon.version, GFWUtils.Hilite(niceSpellName.." "..rankNum)));
 	end
 end
 
