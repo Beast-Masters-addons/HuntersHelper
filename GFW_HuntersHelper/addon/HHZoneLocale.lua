@@ -22,3 +22,8 @@ function HHZoneLocale.localize(zoneName)
         return zoneName;
     end
 end
+
+function HHZoneLocale.zoneIdFromName(zoneName)
+    assert(_G['ZonesNameToId'][zoneName], ("Zone ID for %s not found"):format(zoneName))
+    return _G['ZonesNameToId'][zoneName]
+end

@@ -674,12 +674,8 @@ function FHH_GenerateFindReport(spellId, maxZones)
 		local shouldBreak;
 		for _, zones in pairs(zoneConnections) do
 			for _, zoneName in pairs(zones) do
-				--print('zoneName', zoneName)
-				local mapId = Tourist:GetZoneMapID(zoneName)
-				--assert(mapId, 'mapId not found for zoneName '..zoneName)
-				if mapId ~=nil then
-					zoneId = ZoneInfo.getZoneId(mapId)
-					assert(zoneId, 'ZoneId not found')
+				zoneId = HHZoneLocale.zoneIdFromName(zoneName)
+				if zoneId then
 					petList = PetSpells.getPetsWithSpell(spellId, zoneId)
 					--critterList = FHH_FindCreatures(spellToken, rankNum, zoneName);
 					petList = PetSpells.getPetsWithSpell(spellId, zoneId)
