@@ -20,9 +20,9 @@
 		<Size>
 			<AbsDimension x="20" y="12"/>
 		</Size>
-		<NormalFont inherits="GameFontNormalSmall" justifyH="CENTER"/>
+<!--		<NormalFont inherits="GameFontNormalSmall" justifyH="CENTER"/>
 		<HighlightFont inherits="GameFontHighlightSmall" justifyH="CENTER"/>
-		<DisabledFont inherits="GameFontDisableSmall" justifyH="CENTER"/>
+		<DisabledFont inherits="GameFontDisableSmall" justifyH="CENTER"/>-->
 		<Scripts>
 			<OnLoad>
 				self:SetFrameLevel(self:GetFrameLevel() + 1);
