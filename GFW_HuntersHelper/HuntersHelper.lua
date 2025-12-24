@@ -47,7 +47,6 @@ FHH_NonSpellKeys = {
 	min=1,
 	max=1,
 };
-local db
 
 function CraftIsPetTraining()
 	if GetCraftButtonToken() == 'TRAIN' then
@@ -775,5 +774,5 @@ function FHH_GetSpellBeastCount(spellIcon, spellRank)
 end
 
 function FHH_ShowOptions()
-	LibStub("AceConfigDialog-3.0"):Open("HunterPetHelper_options")
+	LibStub("AceConfigDialog-3.0"):Open(addon.name)
 end
