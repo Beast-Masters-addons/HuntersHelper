@@ -161,7 +161,7 @@ function FHH_OnEvent(self, event, ...)
 
 	elseif ( event == "CRAFT_CLOSE" and FHH_ReplacingCraftFrame) then
 
-		if (IsAddOnLoaded("GFW_HuntersHelperUI")) then
+		if (C_AddOns.IsAddOnLoaded("GFW_HuntersHelperUI")) then
 			HideUIPanel(FHH_UI);
 		end
 
