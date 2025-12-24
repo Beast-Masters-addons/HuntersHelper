@@ -4,7 +4,6 @@ ignore:
   - scripts
   - FrameXML
   - tests
-  - LibHunterPetInfo/libs
 
 externals:
   libs/BM-utils:

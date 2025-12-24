@@ -20,6 +20,8 @@
 
 #@no-lib-strip@
 Libs.xml
+libs\LibHunterPetInfo\data\wrath.xml
+libs\LibHunterPetInfo\lib.xml
 libs\LibTouristClassic\LibTouristClassic-1.0.lua
 #@end-no-lib-strip@
 

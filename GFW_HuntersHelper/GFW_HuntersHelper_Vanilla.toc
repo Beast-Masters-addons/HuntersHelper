@@ -20,6 +20,8 @@
 
 #@no-lib-strip@
 Libs.xml
+libs\LibHunterPetInfo\data\classic.xml
+libs\LibHunterPetInfo\lib.xml
 libs\LibTouristClassicEra\LibTouristClassicEra.lua
 #@end-no-lib-strip@
 
